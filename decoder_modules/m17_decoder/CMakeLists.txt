@@ -30,8 +30,17 @@ else ()
     target_link_directories(m17_decoder PRIVATE ${LIBCODEC2_LIBRARY_DIRS})
     target_link_libraries(m17_decoder PRIVATE ${LIBCODEC2_LIBRARIES})
 
-    # Include it because for some reason pkgconfig doesn't look here?
+    # Fix for ARM Homebrew paths and codec2 include issue
     if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        target_include_directories(m17_decoder PRIVATE "/usr/local/include")
+        # Check if we're on ARM (Apple Silicon)
+        if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm64")
+            # ARM Homebrew path
+            target_include_directories(m17_decoder PRIVATE "/opt/homebrew/include")
+            # Fix for codec2 include path bug - add the codec2 subdirectory
+            target_include_directories(m17_decoder PRIVATE "/opt/homebrew/include/codec2")
+        else ()
+            # Intel Homebrew path
+            target_include_directories(m17_decoder PRIVATE "/usr/local/include")
+        endif()
     endif()
 endif ()
