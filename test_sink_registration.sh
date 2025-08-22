@@ -4,7 +4,7 @@ echo "=== Testing Sink Registration ==="
 
 # Test 1: Check if sink module manager can find audio_sink
 echo "1. Testing sink module registration:"
-timeout 20s SDR++.app/Contents/MacOS/sdrpp 2>registration_test.log &
+timeout 20s SDR++CE.app/Contents/MacOS/sdrpp_ce 2>registration_test.log &
 APP_PID=$!
 sleep 15
 kill $APP_PID 2>/dev/null
@@ -61,7 +61,7 @@ echo ""
 
 # Test 5: Check if audio_sink module exports the right symbols
 echo "5. Testing audio_sink module symbols:"
-if nm SDR++.app/Contents/Plugins/audio_sink.dylib | grep -i "init\|_info" | head -5; then
+if nm SDR++CE.app/Contents/Plugins/audio_sink.dylib | grep -i "init\|_info" | head -5; then
     echo "✅ PASS: audio_sink exports module symbols"
 else
     echo "❌ FAIL: audio_sink missing module symbols"
@@ -71,14 +71,14 @@ echo ""
 
 # Test 6: Compare with working modules
 echo "6. Comparing with working source modules:"
-working_module=$(ls SDR++.app/Contents/Plugins/*_source.dylib | head -1)
+working_module=$(ls SDR++CE.app/Contents/Plugins/*_source.dylib | head -1)
 if [ -n "$working_module" ]; then
     echo "Checking symbols in working module: $(basename $working_module)"
     echo "Working module symbols:"
     nm "$working_module" | grep -i "_info\|init" | head -3
     echo ""
     echo "Audio sink symbols:"
-    nm SDR++.app/Contents/Plugins/audio_sink.dylib | grep -i "_info\|init" | head -3
+    nm SDR++CE.app/Contents/Plugins/audio_sink.dylib | grep -i "_info\|init" | head -3
 else
     echo "⚠️  No working modules found for comparison"
 fi
@@ -92,3 +92,4 @@ rm -f registration_test.log
 
 echo ""
 echo "=== Sink Registration Test Complete ==="
+

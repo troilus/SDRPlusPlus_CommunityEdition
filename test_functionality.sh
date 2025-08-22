@@ -49,11 +49,11 @@ fi
 # 6. Test build artifact existence and timestamps
 echo ""
 echo "6. Testing build artifacts:"
-APP_CORE_LIB="SDR++.app/Contents/MacOS/libsdrpp_core.dylib"
-FRAMEWORKS_CORE_LIB="SDR++.app/Contents/Frameworks/libsdrpp_core.dylib" 
+APP_CORE_LIB="SDR++CE.app/Contents/MacOS/libsdrpp_core.dylib"
+FRAMEWORKS_CORE_LIB="SDR++CE.app/Contents/Frameworks/libsdrpp_core.dylib" 
 BUILD_CORE_LIB="build/core/libsdrpp_core.dylib"
-RADIO_MODULE="SDR++.app/Contents/Plugins/radio.dylib"
-AUDIO_SINK="SDR++.app/Contents/Plugins/audio_sink.dylib"
+RADIO_MODULE="SDR++CE.app/Contents/Plugins/radio.dylib"
+AUDIO_SINK="SDR++CE.app/Contents/Plugins/audio_sink.dylib"
 
 echo "Build directory core library:"
 if [ -f "$BUILD_CORE_LIB" ]; then

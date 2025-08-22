@@ -2,7 +2,7 @@
 
 echo "=== Testing Symbol Export ==="
 
-APP_PATH="SDR++.app"
+APP_PATH="SDR++CE.app"
 CORE_LIB_MACOS="$APP_PATH/Contents/MacOS/libsdrpp_core.dylib"
 CORE_LIB_FRAMEWORKS="$APP_PATH/Contents/Frameworks/libsdrpp_core.dylib"
 RADIO_LIB="$APP_PATH/Contents/Plugins/radio.dylib"

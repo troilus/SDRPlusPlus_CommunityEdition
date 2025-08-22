@@ -4,7 +4,7 @@ echo "=== Testing Audio Sink Detection ==="
 
 # Test 1: Check if audio_sink module is properly loaded and registered
 echo "1. Testing if audio_sink module registers itself:"
-timeout 15s SDR++.app/Contents/MacOS/sdrpp --help >/dev/null 2>sink_test.log &
+timeout 15s SDR++CE.app/Contents/MacOS/sdrpp_ce --help >/dev/null 2>sink_test.log &
 APP_PID=$!
 sleep 10
 kill $APP_PID 2>/dev/null
@@ -36,12 +36,12 @@ echo ""
 
 # Test 3: Check if rtaudio is properly available
 echo "3. Testing rtaudio library availability:"
-if otool -L SDR++.app/Contents/Plugins/audio_sink.dylib | grep -q "rtaudio"; then
+if otool -L SDR++CE.app/Contents/Plugins/audio_sink.dylib | grep -q "rtaudio"; then
     echo "✅ PASS: audio_sink links to rtaudio"
-    rtaudio_path=$(otool -L SDR++.app/Contents/Plugins/audio_sink.dylib | grep rtaudio | awk '{print $1}')
+    rtaudio_path=$(otool -L SDR++CE.app/Contents/Plugins/audio_sink.dylib | grep rtaudio | awk '{print $1}')
     echo "RtAudio path: $rtaudio_path"
     
-    if [ -f "SDR++.app/Contents/Frameworks/librtaudio.7.dylib" ]; then
+    if [ -f "SDR++CE.app/Contents/Frameworks/librtaudio.7.dylib" ]; then
         echo "✅ PASS: librtaudio.7.dylib exists in app bundle"
     else
         echo "❌ FAIL: librtaudio.7.dylib missing from app bundle"
@@ -70,7 +70,7 @@ echo ""
 
 # Test 5: Check audio framework dependencies  
 echo "5. Testing audio framework dependencies:"
-if otool -L SDR++.app/Contents/Plugins/audio_sink.dylib | grep -q "AudioToolbox\|CoreAudio"; then
+if otool -L SDR++CE.app/Contents/Plugins/audio_sink.dylib | grep -q "AudioToolbox\|CoreAudio"; then
     echo "✅ PASS: audio_sink uses audio frameworks"
 else
     echo "❌ FAIL: audio_sink missing audio framework dependencies"
@@ -85,3 +85,4 @@ rm -f sink_test.log
 
 echo ""
 echo "=== Audio Sink Test Complete ==="
+

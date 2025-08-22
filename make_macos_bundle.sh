@@ -19,7 +19,7 @@ bundle_create_struct $BUNDLE
 cp -R root/res/* $BUNDLE/Contents/Resources/
 
 # Create the icon file
-bundle_create_icns root/res/icons/sdrpp_ce.macos.png $BUNDLE/Contents/Resources/sdrpp
+bundle_create_icns root/res/icons/sdrpp_ce.macos.png $BUNDLE/Contents/Resources/sdrppce
 
 # Create the property list
 bundle_create_plist sdrppce "SDR++CE Community Edition" org.sdrppce.sdrppce 1.2.2-CE sdrp sdrpp_ce sdrppce $BUNDLE/Contents/Info.plist

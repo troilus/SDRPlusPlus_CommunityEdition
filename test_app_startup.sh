@@ -2,7 +2,7 @@
 
 echo "=== Testing App Startup ==="
 
-APP_PATH="SDR++.app"
+APP_PATH="SDR++CE.app"
 LOG_FILE="startup_test.log"
 
 echo "1. Testing app file structure:"

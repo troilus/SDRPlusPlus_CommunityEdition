@@ -923,11 +923,14 @@ namespace ImGui {
             float dummy;
             if (snrSmoothing) {
                 float newSNR = 0.0f;
-                calculateVFOSignalInfo(waterfallVisible ? &rawFFTs[currentFFTLine * rawFFTSize] : rawFFTs, vfos[selectedVFO], dummy, newSNR);
+                // CRITICAL FIX: Always pass the full rawFFTs buffer to avoid buffer overflow
+                // The function calculateVFOSignalInfo expects the full buffer for offset calculations
+                calculateVFOSignalInfo(rawFFTs, vfos[selectedVFO], dummy, newSNR);
                 selectedVFOSNR = (snrSmoothingBeta*selectedVFOSNR) + (snrSmoothingAlpha*newSNR);
             }
             else {
-                calculateVFOSignalInfo(waterfallVisible ? &rawFFTs[currentFFTLine * rawFFTSize] : rawFFTs, vfos[selectedVFO], dummy, selectedVFOSNR);
+                // CRITICAL FIX: Always pass the full rawFFTs buffer to avoid buffer overflow
+                calculateVFOSignalInfo(rawFFTs, vfos[selectedVFO], dummy, selectedVFOSNR);
             }
         }
 

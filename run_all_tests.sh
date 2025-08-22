@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "========================================="
-echo "         SDR++ TEST SUITE"
+echo "         SDR++CE TEST SUITE"
 echo "========================================="
 echo ""
 
@@ -31,3 +31,4 @@ echo "- test_symbol_export.sh: Verifies symbol exports"
 echo "- test_app_startup.sh: Tests actual app launch"
 echo ""
 echo "Review logs above to identify issues."
+
