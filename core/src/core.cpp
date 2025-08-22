@@ -60,7 +60,7 @@ namespace core {
 
 // main
 int sdrpp_main(int argc, char* argv[]) {
-    flog::info("SDR++ v" VERSION_STR);
+    flog::info("SDR++ Community Edition v" VERSION_STR);
 
 #ifdef IS_MACOS_BUNDLE
     // If this is a MacOS .app, CD to the correct directory
@@ -127,6 +127,7 @@ int sdrpp_main(int argc, char* argv[]) {
     defConfig["fftRate"] = 20;
     defConfig["fftSize"] = 65536;
     defConfig["fftWindow"] = 2;
+    defConfig["fftZoom"] = 1.0f;
     defConfig["mpxLineWidth"] = displaymenu::MPX_DEFAULT_LINE_WIDTH;
     defConfig["mpxRefreshRate"] = displaymenu::MPX_DEFAULT_REFRESH_RATE;
     defConfig["mpxSmoothingFactor"] = displaymenu::MPX_DEFAULT_SMOOTHING_FACTOR;

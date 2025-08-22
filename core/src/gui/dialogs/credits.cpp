@@ -20,11 +20,11 @@ namespace credits {
         ImVec2 dispSize = ImGui::GetIO().DisplaySize;
         ImVec2 center = ImVec2(dispSize.x / 2.0f, dispSize.y / 2.0f);
         ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-        ImGui::OpenPopup("Credits");
-        ImGui::BeginPopupModal("Credits", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+        ImGui::OpenPopup("About");
+        ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
 
-        ImGui::PushFont(style::hugeFont);
-        ImGui::TextUnformatted("SDR++          ");
+        ImGui::PushFont(style::titleFont);
+        ImGui::TextUnformatted("SDR++ Community Edition");
         ImGui::PopFont();
         ImGui::SameLine();
         ImGui::Image(icons::LOGO, imageSize);
@@ -32,39 +32,41 @@ namespace credits {
         ImGui::Spacing();
         ImGui::Spacing();
 
-        ImGui::TextUnformatted("This software is brought to you by Alexandre Rouma (ON5RYZ) with the help of\n\n");
+        ImGui::TextUnformatted("A community-driven fork welcoming all contributors and AI-enhanced development\n");
+        ImGui::TextUnformatted("Building upon the original SDR++ project by Alexandre Rouma (ON5RYZ)\n\n");
 
-        ImGui::Columns(4, "CreditColumns", true);
+        ImGui::Columns(2, "CreditColumns", true);
 
-        ImGui::TextUnformatted("Contributors");
-        for (int i = 0; i < sdrpp_credits::contributorCount; i++) {
-            ImGui::BulletText("%s", sdrpp_credits::contributors[i]);
-        }
+        ImGui::TextUnformatted("Community Edition Team");
+        ImGui::BulletText("Miguel Gomes (Project Lead)");
+        ImGui::BulletText("AI-Enhanced Development");
+        ImGui::BulletText("Community Contributors");
+        ImGui::Spacing();
+        
+        ImGui::TextUnformatted("Key Features");
+        ImGui::BulletText("MPX Analysis for FM Broadcasting");
+        ImGui::BulletText("Enhanced Configuration Management");
+        ImGui::BulletText("Cross-Platform Build Improvements");
+        ImGui::BulletText("Community-First Development");
 
         ImGui::NextColumn();
-        ImGui::TextUnformatted("Libraries");
+        ImGui::TextUnformatted("Core Libraries");
         for (int i = 0; i < sdrpp_credits::libraryCount; i++) {
             ImGui::BulletText("%s", sdrpp_credits::libraries[i]);
         }
-
-        ImGui::NextColumn();
-        ImGui::TextUnformatted("Hardware Donators");
-        for (int i = 0; i < sdrpp_credits::hardwareDonatorCount; i++) {
-            ImGui::BulletText("%s", sdrpp_credits::hardwareDonators[i]);
-        }
-
-        ImGui::NextColumn();
-        ImGui::TextUnformatted("Patrons");
-        for (int i = 0; i < sdrpp_credits::patronCount; i++) {
-            ImGui::BulletText("%s", sdrpp_credits::patrons[i]);
-        }
+        ImGui::Spacing();
+        
+        ImGui::TextUnformatted("Acknowledgments");
+        ImGui::BulletText("Original SDR++ project and contributors");
+        ImGui::BulletText("Open source community");
+        ImGui::BulletText("Hardware and software donators");
 
         ImGui::Columns(1, "CreditColumnsEnd", true);
 
         ImGui::Spacing();
         ImGui::Spacing();
         ImGui::Spacing();
-        ImGui::TextUnformatted("SDR++ v" VERSION_STR " (Built at " __TIME__ ", " __DATE__ ")");
+        ImGui::TextUnformatted("SDR++ CE v" VERSION_STR " (Built at " __TIME__ ", " __DATE__ ")");
 
         ImGui::EndPopup();
         ImGui::PopStyleColor();

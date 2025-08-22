@@ -192,10 +192,26 @@ void MainWindow::init() {
     gui::freqSelect.frequencyChanged = false;
     sigpath::sourceManager.tune(frequency);
     gui::waterfall.setCenterFrequency(frequency);
-    bw = 1.0;
+    bw = core::configManager.conf["fftZoom"];
+    
+    // Apply the saved FFT zoom level
+    double factor = (double)bw * (double)bw;
+    double wfBw = gui::waterfall.getBandwidth();
+    double delta = wfBw - 1000.0;
+    double finalBw = std::min<double>(1000.0 + (factor * delta), wfBw);
+    gui::waterfall.setViewBandwidth(finalBw);
+    
     gui::waterfall.vfoFreqChanged = false;
     gui::waterfall.centerFreqMoved = false;
     gui::waterfall.selectFirstVFO();
+    
+    // Center the VFO on screen after applying zoom
+    if (!gui::waterfall.vfos.empty() && gui::waterfall.vfos.find(gui::waterfall.selectedVFO) != gui::waterfall.vfos.end()) {
+        auto vfo = gui::waterfall.vfos[gui::waterfall.selectedVFO];
+        if (vfo != NULL) {
+            gui::waterfall.setViewOffset(vfo->centerOffset);
+        }
+    }
 
     menuWidth = core::configManager.conf["menuWidth"];
     newWidth = menuWidth;
@@ -628,6 +644,9 @@ void MainWindow::draw() {
         if (vfo != NULL) {
             gui::waterfall.setViewOffset(vfo->centerOffset); // center vfo on screen
         }
+        core::configManager.acquire();
+        core::configManager.conf["fftZoom"] = bw;
+        core::configManager.release(true);
     }
 
     ImGui::NewLine();

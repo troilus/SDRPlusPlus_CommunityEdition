@@ -29,10 +29,10 @@ namespace displaymenu {
     bool snrSmoothing = false;
     int snrSmoothingSpeed = 20;
     
-    // MPX Analysis Variables
-    int mpxRefreshRate = MPX_DEFAULT_REFRESH_RATE;
-    float mpxLineWidth = MPX_DEFAULT_LINE_WIDTH;
-    int mpxSmoothingFactor = MPX_DEFAULT_SMOOTHING_FACTOR;
+    // MPX Analysis Variables - Cross-platform export/import
+    SDRPP_EXPORT int mpxRefreshRate = MPX_DEFAULT_REFRESH_RATE;
+    SDRPP_EXPORT float mpxLineWidth = MPX_DEFAULT_LINE_WIDTH;
+    SDRPP_EXPORT int mpxSmoothingFactor = MPX_DEFAULT_SMOOTHING_FACTOR;
 
     OptionList<int, int> fftSizes;
     OptionList<float, float> uiScales;

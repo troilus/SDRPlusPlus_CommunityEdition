@@ -149,7 +149,7 @@ jobs:
 
         - name: Create Archive
           working-directory: ${{runner.workspace}}
-          run: cd $GITHUB_WORKSPACE && sh make_macos_bundle.sh ${{runner.workspace}}/build ./SDR++.app && zip -r ${{runner.workspace}}/sdrpp_macos_intel.zip SDR++.app
+          run: cd $GITHUB_WORKSPACE && sh make_macos_bundle.sh ${{runner.workspace}}/build ./SDR++CE.app && zip -r ${{runner.workspace}}/sdrpp_macos_intel.zip SDR++CE.app
 
         - name: Save Archive
           uses: actions/upload-artifact@v4
@@ -209,7 +209,7 @@ jobs:
 
         - name: Create Archive
           working-directory: ${{runner.workspace}}
-          run: cd $GITHUB_WORKSPACE && sh make_macos_bundle.sh ${{runner.workspace}}/build ./SDR++.app && zip -r ${{runner.workspace}}/sdrpp_macos_arm.zip SDR++.app
+          run: cd $GITHUB_WORKSPACE && sh make_macos_bundle.sh ${{runner.workspace}}/build ./SDR++CE.app && zip -r ${{runner.workspace}}/sdrpp_macos_arm.zip SDR++CE.app
 
         - name: Save Archive
           uses: actions/upload-artifact@v4
@@ -664,6 +664,8 @@ jobs:
           uses: actions/download-artifact@v4
 
         - name: Update Nightly
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: gh release upload nightly sdrpp_all/* -R ${{github.repository}} --clobber
 
     check_spelling:

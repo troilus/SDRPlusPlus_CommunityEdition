@@ -87,7 +87,7 @@ namespace backend {
 
         // Create window with graphics context
         monitor = glfwGetPrimaryMonitor();
-        window = glfwCreateWindow(winWidth, winHeight, "SDR++ v" VERSION_STR " (Built at " __TIME__ ", " __DATE__ ")", NULL, NULL);
+        window = glfwCreateWindow(winWidth, winHeight, "SDR++ Community Edition v" VERSION_STR " (Built at " __TIME__ ", " __DATE__ ")", NULL, NULL);
         if (window == NULL)
             return 1;
         glfwMakeContextCurrent(window);
@@ -100,12 +100,12 @@ namespace backend {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSIONS_MAJOR[i]);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSIONS_MINOR[i]);
     #if GLFW_VERSION_MAJOR > 3 || (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4)
-            glfwWindowHintString(GLFW_WAYLAND_APP_ID, "sdrpp");
+            glfwWindowHintString(GLFW_WAYLAND_APP_ID, "sdrpp-community");
     #endif
             
             // Create window with graphics context
             monitor = glfwGetPrimaryMonitor();
-            window = glfwCreateWindow(winWidth, winHeight, "SDR++ v" VERSION_STR " (Built at " __TIME__ ", " __DATE__ ")", NULL, NULL);
+            window = glfwCreateWindow(winWidth, winHeight, "SDR++ Community Edition v" VERSION_STR " (Built at " __TIME__ ", " __DATE__ ")", NULL, NULL);
             if (window == NULL) {
                 flog::info("OpenGL {0}.{1} {2}was not supported", OPENGL_VERSIONS_MAJOR[i], OPENGL_VERSIONS_MINOR[i], OPENGL_VERSIONS_IS_ES[i] ? "ES " : "");
                 continue;
@@ -118,13 +118,13 @@ namespace backend {
     #endif
 
         // Load app icon
-        if (!std::filesystem::is_regular_file(resDir + "/icons/sdrpp.png")) {
-            flog::error("Icon file '{0}' doesn't exist!", resDir + "/icons/sdrpp.png");
+        if (!std::filesystem::is_regular_file(resDir + "/icons/sdrpp_ce.png")) {
+            flog::error("Icon file '{0}' doesn't exist!", resDir + "/icons/sdrpp_ce.png");
             return 1;
         }
 
         GLFWimage icons[10];
-        icons[0].pixels = stbi_load(((std::string)(resDir + "/icons/sdrpp.png")).c_str(), &icons[0].width, &icons[0].height, 0, 4);
+        icons[0].pixels = stbi_load(((std::string)(resDir + "/icons/sdrpp_ce.png")).c_str(), &icons[0].width, &icons[0].height, 0, 4);
         icons[1].pixels = (unsigned char*)malloc(16 * 16 * 4);
         icons[1].width = icons[1].height = 16;
         icons[2].pixels = (unsigned char*)malloc(24 * 24 * 4);

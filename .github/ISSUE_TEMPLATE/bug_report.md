@@ -31,9 +31,9 @@ A clear description of the bug.
 
 **Only If SDR++ fails to lauch or the SDR fails to start:**
 Run SDR++ from a command line window with special parameters:
-* On Windows, open a terminal and `cd` to SDR++'s directory and run `.\sdrpp.exe -c` (if running SDR++ version 1.0.4 or older, use `-s` instead, though you should probably update SDR++ instead...)
-* On Linux: Open a terminal and run `sdrpp -c`
-* On MacOS: Open a terminal and run `/path/to/the/SDR++.app/Contents/MacOS/sdrpp -c`
+* On Windows, open a terminal and `cd` to SDR++'s directory and run `.\sdrpp_ce.exe -c` 
+* On Linux: Open a terminal and run `sdrpp_ce -c`
+* On MacOS: Open a terminal and run `/path/to/the/SDR++.app/Contents/MacOS/sdrpp_ce -c`
 Then, post the **entire** logs from start to after the issue. **DOT NOT truncate to where you *think* the error is...**
 
 **Screenshots**

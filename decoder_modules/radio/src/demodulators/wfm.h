@@ -16,7 +16,20 @@
 #include <gui/menus/display.h>
 
 // MPX Analysis requires FFTW3
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#endif
 #include <fftw3.h>
+#ifdef _WIN32
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

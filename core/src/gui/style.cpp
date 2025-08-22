@@ -7,9 +7,11 @@
 
 namespace style {
     ImFont* baseFont;
+    ImFont* titleFont;
     ImFont* bigFont;
     ImFont* hugeFont;
     ImVector<ImWchar> baseRanges;
+    ImVector<ImWchar> titleRanges;
     ImVector<ImWchar> bigRanges;
     ImVector<ImWchar> hugeRanges;
 
@@ -32,6 +34,12 @@ namespace style {
         baseBuilder.AddRanges(fonts->GetGlyphRangesCyrillic());
         baseBuilder.BuildRanges(&baseRanges);
 
+        // Create title font range (full character set for titles)
+        ImFontGlyphRangesBuilder titleBuilder;
+        titleBuilder.AddRanges(fonts->GetGlyphRangesDefault());
+        titleBuilder.AddRanges(fonts->GetGlyphRangesCyrillic());
+        titleBuilder.BuildRanges(&titleRanges);
+
         // Create big font range
         ImFontGlyphRangesBuilder bigBuilder;
         const ImWchar bigRange[] = { '.', '9', 0 };
@@ -46,6 +54,7 @@ namespace style {
         
         // Add bigger fonts for frequency select and title
         baseFont = fonts->AddFontFromFileTTF(((std::string)(resDir + "/fonts/Roboto-Medium.ttf")).c_str(), 16.0f * uiScale, NULL, baseRanges.Data);
+        titleFont = fonts->AddFontFromFileTTF(((std::string)(resDir + "/fonts/Roboto-Medium.ttf")).c_str(), 32.0f * uiScale, NULL, titleRanges.Data);
         bigFont = fonts->AddFontFromFileTTF(((std::string)(resDir + "/fonts/Roboto-Medium.ttf")).c_str(), 45.0f * uiScale, NULL, bigRanges.Data);
         hugeFont = fonts->AddFontFromFileTTF(((std::string)(resDir + "/fonts/Roboto-Medium.ttf")).c_str(), 128.0f * uiScale, NULL, hugeRanges.Data);
 

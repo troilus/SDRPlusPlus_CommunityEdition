@@ -2,6 +2,11 @@
 
 namespace sdrpp_credits {
     const char* contributors[] = {
+        "Community Edition Team:",
+        "  Miguel Gomes (Project Lead)",
+        "  AI-Enhanced Development",
+        "",
+        "Original SDR++ Contributors:",
         "Aang23",
         "Alexsey Shestacov",
         "Aosync",
