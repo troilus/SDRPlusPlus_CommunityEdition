@@ -10,11 +10,13 @@
 #include <algorithm>
 #include <cmath>
 #include <complex>
-#include <fftw3.h>
 #include <string>
 #include <cstring>
 #include <chrono>
 #include <gui/menus/display.h>
+
+// MPX Analysis requires FFTW3
+#include <fftw3.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
