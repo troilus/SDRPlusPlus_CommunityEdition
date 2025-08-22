@@ -2,6 +2,17 @@
 
 Code pull requests are **NOT welcome**. Please open an issue discussing potential bugfixes or feature requests instead.
 
+## Scanner Module Enhancements
+
+The Scanner module has been enhanced with several new features including frequency blacklisting, settings persistence, and improved frequency wrapping. These enhancements improve the user experience and make the scanner more robust for real-world usage scenarios.
+
+### Recent Scanner Features Added
+- **Frequency Blacklist**: Skip unwanted frequencies with configurable tolerance
+- **Settings Persistence**: Automatic saving/loading of all scanner configuration
+- **Reset Functionality**: Return to start frequency at any time
+- **Improved Frequency Wrapping**: Better handling of frequency range boundaries
+- **Enhanced UI**: Better user interface with status information
+
 ## Band Frequency Allocation 
 
 Please follow this guide to properly format the JSON files for custom radio band allocation identifiers.
