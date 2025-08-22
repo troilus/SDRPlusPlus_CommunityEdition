@@ -13,6 +13,7 @@
 #include <core.h>
 #include <filesystem>
 #include <gui/menus/theme.h>
+#include <gui/menus/display.h>
 #include <backend.h>
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
@@ -126,6 +127,9 @@ int sdrpp_main(int argc, char* argv[]) {
     defConfig["fftRate"] = 20;
     defConfig["fftSize"] = 65536;
     defConfig["fftWindow"] = 2;
+    defConfig["mpxLineWidth"] = displaymenu::MPX_DEFAULT_LINE_WIDTH;
+    defConfig["mpxRefreshRate"] = displaymenu::MPX_DEFAULT_REFRESH_RATE;
+    defConfig["mpxSmoothingFactor"] = displaymenu::MPX_DEFAULT_SMOOTHING_FACTOR;
     defConfig["frequency"] = 100000000.0;
     defConfig["fullWaterfallUpdate"] = false;
     defConfig["max"] = 0.0;
