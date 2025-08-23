@@ -451,9 +451,9 @@ If you would like to contribute in other ways or have questions not related to s
 
 ### Donations
 
-If you want to support the development of the original SDR++, you can do so via the original author's [Patreon](https://patreon.com/ryzerth). **Note**: Donations go to the original SDR++ author, not the Community Edition maintainers.
+If you want to support the continued development of **SDR++CE Community Edition**, you can do so via [Patreon](https://www.patreon.com/c/miguel_vidal_gomes). 
 
-Or, if you are a company and want to integrate SDR++ into your workflow or add functionality specific to your hardware, you can hire the original author to develop features for you or for the entire SDR++ community.
+Or, if you are a company and want to integrate SDR++ into your workflow or add functionality specific to your hardware, you can reach out for custom SDR++CE features or professional support.
 
 ---
 
