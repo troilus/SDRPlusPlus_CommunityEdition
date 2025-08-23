@@ -1,9 +1,37 @@
 # SDR++ Community Edition 🌟
-## The bloat-free SDR software that welcomes everyone
+## Advanced Software-Defined Radio (SDR) application with MPX broadcasting analysis
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android-lightgrey)](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/releases)
+[![Hardware Support](https://img.shields.io/badge/hardware-RTL--SDR%20%7C%20HackRF%20%7C%20LimeSDR%20%7C%20AirSpy%20%7C%20PlutoSDR-green)](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition)
+
+**The community-driven SDR software** for RTL-SDR, HackRF, LimeSDR, AirSpy, PlutoSDR, USRP and more. Features advanced **FM broadcasting analysis**, **MPX spectrum visualization**, **frequency scanning**, and comprehensive **signal processing** capabilities.
 
 ![Screenshot](wiki/mpx_analysis.png)
 
 **SDR++ Community Edition** is a community-driven fork of the original SDR++ - a cross-platform and open source SDR software with the aim of being bloat free and simple to use.
+
+## 🔥 **Key Features & Hardware Support**
+
+**🎵 Broadcasting Analysis:**
+- Real-time **FM MPX spectrum analysis** with professional visualization
+- **RDS decoding** and stereo **L/R channel analysis**  
+- **Radio broadcasting** signal monitoring and analysis
+
+**📡 Hardware Compatibility:**
+- **RTL-SDR** dongles (R820T, R828D, RTL2832U)
+- **HackRF One** software-defined radio
+- **LimeSDR Mini/USB** high-performance SDR
+- **AirSpy R2/Mini** receivers
+- **PlutoSDR** (Analog Devices ADALM-PLUTO)
+- **USRP** devices and many more...
+
+**🔧 Advanced Features:**
+- **Spectrum analyzer** with waterfall display
+- **Frequency scanner** with blacklist management
+- **Digital mode decoding** (ADS-B, AIS, APRS, M17, POCSAG)
+- **Amateur radio** and **ham radio** applications
+- **Satellite tracking** and **radio astronomy** support
 
 ### 🎯 **Mission: Community-First Development**
 
@@ -38,10 +66,10 @@ We actively encourage contributions! Whether you're fixing bugs, adding features
 
 ---
 
-### 📊 **Repository Links**
-- 🏠 **Community Edition**: [SDRPlusPlus-CommunityEdition](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition)
+### 🚀 **Get Started**
+- 🏠 **Project Home**: [SDRPlusPlus-CommunityEdition](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition)
 - 📞 **Community Support**: [Issues & Discussions](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/issues)
-- 🔗 **Original Project**: [AlexandreRouma/SDRPlusPlus](https://github.com/AlexandreRouma/SDRPlusPlus)
+- 📖 **Contributing Guide**: [contributing.md](contributing.md)
 
 ## Features
 
@@ -61,8 +89,8 @@ We actively encourage contributions! Whether you're fixing bugs, adding features
 
 **SDR++ Community Edition** releases include the latest community-contributed features and improvements. Download the latest release from the [Community Edition Releases page](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/releases).
 
-### Original SDR++ Compatibility
-This Community Edition maintains full compatibility with original SDR++ configurations and plugins. You can also download original SDR++ builds from the [original project's releases](https://github.com/AlexandreRouma/SDRPlusPlus/releases) if preferred.
+### 🔄 **Seamless Migration**
+SDR++ Community Edition maintains full compatibility with existing configurations and plugins, making migration effortless.
 
 ## Windows
 
@@ -89,7 +117,7 @@ sudo apt install path/to/the/sdrpp_debian_amd64.deb
 yay -S sdrpp-git
 ```
 
-**WARNING: The sdrpp-git AUR package is no longer official, it is not recommended to use it.**
+**Note:** For the most up-to-date features, we recommend downloading from our [Community Edition Releases](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/releases).
 
 ### Other
 
@@ -97,9 +125,20 @@ There are currently no existing packages for other distributions, for these syst
 
 ## MacOS
 
-**Community Edition**: Download the latest macOS app bundle from [Community Edition Releases](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/releases).
+Download the latest macOS app bundle from [Community Edition Releases](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/releases).
 
-**Original SDR++**: Alternatively, download from the original [nightly build](https://www.sdrpp.org/nightly)
+### 🔒 **macOS Security Notice**
+macOS may show a "corrupted" or "damaged" warning for unsigned apps. This is normal! The app is safe.
+
+**To bypass this security warning:**
+1. **Right-click** the `SDR++.app` file → **"Open"**
+2. **Click "Open"** in the security dialog
+3. The app will launch and be trusted permanently
+
+**Alternative (Terminal):**
+```bash
+sudo xattr -rd com.apple.quarantine /path/to/SDR++.app
+```
 
 ## BSD
 
@@ -136,7 +175,7 @@ You will also need to copy the following modules that don't build as plugins to 
 
 ## Installing SDR++ Community Edition
 
-If you chose to run SDR++ Community Edition for development, DO NOT perform this step.
+**Note:** Skip this step if you're running for development (using the `root_dev` folder).
 
 In the build directory, run:
 ```
@@ -160,7 +199,7 @@ Here are additional modules that you can enable in your `build_options.local.txt
 * `OPT_BUILD_RTL_TCP_SOURCE` - For connecting to rtl_tcp instances
 * `OPT_BUILD_SDRPP_SERVER_SOURCE` - For connecting to other SDR++ instances remotely
 * `OPT_BUILD_SPYSERVER_SOURCE` - For connecting to SpyServer instances
-* `OPT_BUILD_SOAPY_SOURCE` - For SoapySDR devices (WARNING: Produces very messy code as of right now)
+* `OPT_BUILD_SOAPY_SOURCE` - For SoapySDR devices (Note: Code generation in active development)
 
 ## Installing dependencies
 
@@ -388,6 +427,29 @@ Edit `config.json` and change the `bufferSize` value to `4096000`.
 
 The HackRF has the annoying tendency to have a DC offset spike. You can avoid this by activating the "Offset Tuning" option in the source settings.
 
+# Contributing to SDR++ Community Edition 🤝
+
+**We warmly welcome ALL contributors!** Your ideas, improvements, and feedback help make SDR++ Community Edition better for everyone.
+
+### 🚀 **How to Contribute**
+
+**Report issues or suggest features:**
+- Use our [GitHub Issues](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/issues) to report bugs or request features
+- Join discussions in our [Community Forum](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/discussions)
+
+**Code contributions:**
+- **New SDR devices**: Create source plugins - our modular design makes this straightforward
+- **Demodulators**: Add to the radio module or create decoder modules  
+- **UI enhancements**: We welcome both functional improvements and visual enhancements
+- **Core features**: Architectural improvements and new capabilities are always appreciated
+
+### 🎨 **UI & UX Contributions Welcome**
+Unlike restrictive projects, **we embrace UI/UX improvements!** Beautiful, intuitive interfaces make SDR more accessible to everyone.
+
+**Code quality:**
+- Run `clang-format` on your changes for consistency
+- We'll help you with any formatting issues during review
+
 ## Setting up the development environment
 
 SDR++ Community Edition uses CMake for compilation and [vcpkg](https://github.com/microsoft/vcpkg) for dependency management on Windows.
@@ -411,9 +473,9 @@ Note: Some older distributions don't have `libvolk2-dev`. Use `libvolk1-dev` ins
 ### Cross platform building
 
 SDR++ Community Edition uses CMake, which allows for easy cross-platform compilation.
-Some modules that are included will not work on all platforms. For example the "audio_sink" module uses the portaudio library, which may not always be available.
+Some modules are platform-specific. For example, the "audio_sink" module uses the portaudio library, which may not be available on all systems.
 
-Please make sure to disabling the modules you don't need with the module build options.
+You can easily disable unneeded modules using the build options described above.
 
 ### How to create modules
 
@@ -435,26 +497,39 @@ Remember that headers for the core need to be included as `#include <utils/flog.
 Of course, don't forget to add the option to build it to the config.
 In addition, use `OPT_BUILD_MYMODULE` to disable the module in module_list.hpp if it should not be built.
 
-## Contributing to core
+## 🏗️ **Core Development**
 
-When contributing to the core, please try to maintain the current "programming style".
-While there isn't a style guide, the formatting is done using clang-format.
+**Ready to dive deeper?** Core contributions help shape the fundamental architecture and capabilities of SDR++ Community Edition.
 
-The best way to familiarize yourself with the core is to look at the source files and see how SDR++ Community Edition is structured.
+**Getting started with core development:**
+- Explore the source files to understand our modular architecture
+- Check our [MACOS_BUILD_INSTRUCTIONS.md](MACOS_BUILD_INSTRUCTIONS.md) for platform-specific guidance
+- Use `clang-format` for consistent code styling
 
-This project was mainly written by one person, so it might not be the best software architecture. I am open to critiques of the code and how to improve it.
+**We welcome architectural improvements!** This codebase has evolved over time, and fresh perspectives on design patterns, performance optimizations, and code organization are always valuable.
 
-## Other contributions
+## 🌟 **Other Ways to Contribute**
 
-While software contributions are preferred, SDR++ Community Edition always welcomes other types of contributions.
-If you would like to contribute in other ways or have questions not related to software, please see:
+Beyond code, there are many valuable ways to support SDR++ Community Edition:
 
-### Donations
+### 📢 **Community Support**
+- **Help fellow users** in our [GitHub Discussions](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/discussions)
+- **Share your projects** and inspire others with your SDR applications
+- **Write tutorials** and documentation to help newcomers get started
+- **Test new features** and provide feedback on releases
 
-If you want to support the continued development of **SDR++CE Community Edition**, you can do so via [Patreon](https://www.patreon.com/c/miguel_vidal_gomes). 
+### 🏢 **Enterprise & Commercial Use**
+Companies integrating SDR++ Community Edition into their workflows are welcome to:
+- **Sponsor feature development** through our community-focused development model
+- **Contribute specialized hardware support** for your SDR devices
+- **Share expertise** through technical documentation and best practices
 
-Or, if you are a company and want to integrate SDR++ into your workflow or add functionality specific to your hardware, you can reach out for custom SDR++CE features or professional support.
+**The Community Edition thrives through collective collaboration** - every contribution, big or small, helps build a better SDR software ecosystem for everyone.
 
 ---
 
 **Welcome to SDR++ Community Edition - where every contribution matters! 🚀**
+
+---
+
+<sub>*SDR++ Community Edition is based on the foundation of the original SDR++ project by Alexandre Rouma. This Community Edition exists to foster open collaboration and rapid feature development.*</sub>
