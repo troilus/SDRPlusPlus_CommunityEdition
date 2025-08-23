@@ -119,7 +119,15 @@ $TestExe = if ($PackageDir -and (Test-Path "$PackageDir\sdrpp_ce.exe")) {
 
 if (Test-Path $TestExe) {
     try {
-        $process = Start-Process -FilePath $TestExe -ArgumentList "--help" -NoNewWindow -PassThru -RedirectStandardOutput "nul" -RedirectStandardError "nul"
+        $tempOut = [System.IO.Path]::GetTempFileName()
+        $tempErr = [System.IO.Path]::GetTempFileName()
+        
+        $process = Start-Process -FilePath $TestExe -ArgumentList "--help" -NoNewWindow -PassThru -RedirectStandardOutput $tempOut -RedirectStandardError $tempErr
+        
+        # Clean up temp files after process starts
+        Start-Sleep -Milliseconds 100
+        Remove-Item $tempOut -ErrorAction SilentlyContinue
+        Remove-Item $tempErr -ErrorAction SilentlyContinue
         $finished = $process.WaitForExit(5000)
         
         if (!$finished) {

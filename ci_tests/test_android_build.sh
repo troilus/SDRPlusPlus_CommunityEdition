@@ -104,3 +104,4 @@ else
     echo "💥 $FAILED_TESTS test(s) failed! APK should NOT be released."
     exit 1
 fi
+
