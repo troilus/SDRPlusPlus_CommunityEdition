@@ -67,8 +67,8 @@ We actively encourage contributions! Whether you're fixing bugs, adding features
 ---
 
 ### 🚀 **Get Started**
-- 🏠 **Project Home**: [SDRPlusPlus-CommunityEdition](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition)
-- 📞 **Community Support**: [Issues & Discussions](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/issues)
+- 🏠 **Project Home**: [SDRPlusPlus_CommunityEdition](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition)
+- 📞 **Community Support**: [Issues & Discussions](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/issues)
 - 📖 **Contributing Guide**: [contributing.md](contributing.md)
 
 ## Features
@@ -87,14 +87,14 @@ We actively encourage contributions! Whether you're fixing bugs, adding features
 
 ## Community Edition Releases
 
-**SDR++ Community Edition** releases include the latest community-contributed features and improvements. Download the latest release from the [Community Edition Releases page](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/releases).
+**SDR++ Community Edition** releases include the latest community-contributed features and improvements. Download the latest release from the [Community Edition Releases page](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/releases).
 
 ### 🔄 **Seamless Migration**
 SDR++ Community Edition maintains full compatibility with existing configurations and plugins, making migration effortless.
 
 ## Windows
 
-Download the latest release from [the Community Edition Releases page](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/releases) and extract to the directory of your choice.
+Download the latest release from [the Community Edition Releases page](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/releases) and extract to the directory of your choice.
 
 To create a desktop shortcut, rightclick the exe and select `Send to -> Desktop (create shortcut)`, then, rename the shortcut on the desktop to whatever you want.
 
@@ -102,7 +102,7 @@ To create a desktop shortcut, rightclick the exe and select `Send to -> Desktop 
 
 ### Debian-based (Ubuntu, Mint, etc)
 
-Download the latest release from [the Community Edition Releases page](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/releases) and extract to the directory of your choice.
+Download the latest release from [the Community Edition Releases page](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/releases) and extract to the directory of your choice.
 
 Then, use apt to install it:
 
@@ -117,15 +117,15 @@ sudo apt install path/to/the/sdrpp_debian_amd64.deb
 yay -S sdrpp-git
 ```
 
-**Note:** For the most up-to-date features, we recommend downloading from our [Community Edition Releases](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/releases).
+**Note:** For the most up-to-date features, we recommend downloading from our [Community Edition Releases](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/releases).
 
 ### Other
 
-There are currently no existing packages for other distributions, for these systems you'll have to [build from source](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition#building-on-linux--bsd).
+There are currently no existing packages for other distributions, for these systems you'll have to [build from source](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition#building-on-linux--bsd).
 
 ## MacOS
 
-Download the latest macOS app bundle from [Community Edition Releases](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/releases).
+Download the latest macOS app bundle from [Community Edition Releases](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/releases).
 
 ### 🔒 **macOS Security Notice**
 macOS may show a "corrupted" or "damaged" warning for unsigned apps. This is normal! The app is safe.
@@ -142,7 +142,7 @@ sudo xattr -rd com.apple.quarantine /path/to/SDR++.app
 
 ## BSD
 
-There are currently no BSD packages, refer to [Building on Linux / BSD](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition#building-on-linux--bsd) for instructions on building from source.
+There are currently no BSD packages, refer to [Building on Linux / BSD](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition#building-on-linux--bsd) for instructions on building from source.
 
 # Building on Windows
 
@@ -434,8 +434,8 @@ The HackRF has the annoying tendency to have a DC offset spike. You can avoid th
 ### 🚀 **How to Contribute**
 
 **Report issues or suggest features:**
-- Use our [GitHub Issues](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/issues) to report bugs or request features
-- Join discussions in our [Community Forum](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/discussions)
+- Use our [GitHub Issues](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/issues) to report bugs or request features
+- Join discussions in our [Community Forum](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/discussions)
 
 **Code contributions:**
 - **New SDR devices**: Create source plugins - our modular design makes this straightforward
@@ -513,7 +513,7 @@ In addition, use `OPT_BUILD_MYMODULE` to disable the module in module_list.hpp i
 Beyond code, there are many valuable ways to support SDR++ Community Edition:
 
 ### 📢 **Community Support**
-- **Help fellow users** in our [GitHub Discussions](https://github.com/miguel-vidal-gomes/SDRPlusPlus-CommunityEdition/discussions)
+- **Help fellow users** in our [GitHub Discussions](https://github.com/miguel-vidal-gomes/SDRPlusPlus_CommunityEdition/discussions)
 - **Share your projects** and inspire others with your SDR applications
 - **Write tutorials** and documentation to help newcomers get started
 - **Test new features** and provide feedback on releases
