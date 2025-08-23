@@ -9,6 +9,19 @@
 #include <gui/style.h>
 #include <utils/optionlist.h>
 
+// Windows MSVC compatibility 
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+#endif
+
 #define CONCAT(a, b) ((std::string(a) + b).c_str())
 
 SDRPP_MOD_INFO{
@@ -89,6 +102,7 @@ public:
         handler.startHandler = start;
         handler.stopHandler = stop;
         handler.tuneHandler = tune;
+        handler.gainHandler = setGain;
         handler.stream = &stream;
         sigpath::sourceManager.registerSource("RTL-TCP", &handler);
     }
@@ -172,6 +186,19 @@ private:
         }
         _this->freq = freq;
         flog::info("RTLTCPSourceModule '{0}': Tune: {1}!", _this->name, freq);
+    }
+
+    static void setGain(double gain, void* ctx) {
+        RTLTCPSourceModule* _this = (RTLTCPSourceModule*)ctx;
+        // Convert gain dB to RTL-TCP gain index (0-28 range)
+        // Map 0-50dB to 0-28 index range, avoiding Windows min/max macro conflicts
+        int rawGainIndex = (int)(gain * 28.0 / 50.0);
+        int gainIndex = (rawGainIndex < 0) ? 0 : ((rawGainIndex > 28) ? 28 : rawGainIndex);
+        _this->gain = gainIndex;
+        if (_this->running && !_this->tunerAGC) {
+            _this->client->setGainIndex(gainIndex);
+        }
+        flog::info("RTLTCPSourceModule '{0}': Set gain to index {1} (from {2:.1f} dB)", _this->name, gainIndex, gain);
     }
 
     static void menuHandler(void* ctx) {

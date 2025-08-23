@@ -12,6 +12,19 @@
 #include <android_backend.h>
 #endif
 
+// Windows MSVC compatibility 
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+#endif
+
 #define CONCAT(a, b) ((std::string(a) + b).c_str())
 
 SDRPP_MOD_INFO{
@@ -70,6 +83,7 @@ public:
         handler.startHandler = start;
         handler.stopHandler = stop;
         handler.tuneHandler = tune;
+        handler.gainHandler = setGain;
         handler.stream = &stream;
 
         strcpy(dbTxt, "--");
@@ -356,6 +370,33 @@ private:
         }
         _this->freq = freq;
         flog::info("RTLSDRSourceModule '{0}': Tune: {1}!", _this->name, freq);
+    }
+
+    static void setGain(double gain, void* ctx) {
+        RTLSDRSourceModule* _this = (RTLSDRSourceModule*)ctx;
+        // Convert gain dB to RTL-SDR gain index (RTL-SDR has predefined gain steps)
+        // We need to find the closest gain step to the requested gain
+        if (_this->gainList.size() > 0) {
+            int closestIndex = 0;
+            double closestDiff = std::abs((double)_this->gainList[0] - gain * 10.0); // RTL-SDR gains are in 0.1dB units
+            
+            for (int i = 1; i < _this->gainList.size(); i++) {
+                double diff = std::abs((double)_this->gainList[i] - gain * 10.0);
+                if (diff < closestDiff) {
+                    closestDiff = diff;
+                    closestIndex = i;
+                }
+            }
+            
+            _this->gainId = closestIndex;
+            if (_this->running && !_this->tunerAgc) {
+                rtlsdr_set_tuner_gain(_this->openDev, _this->gainList[_this->gainId]);
+            }
+            flog::info("RTLSDRSourceModule '{0}': Set gain to {1:.1f} dB (RTL-SDR gain: {2:.1f} dB)", 
+                       _this->name, gain, (double)_this->gainList[_this->gainId] / 10.0);
+        } else {
+            flog::warn("RTLSDRSourceModule '{0}': No gain list available, cannot set gain", _this->name);
+        }
     }
 
     static void menuHandler(void* ctx) {

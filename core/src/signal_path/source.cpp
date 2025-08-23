@@ -39,6 +39,10 @@ std::vector<std::string> SourceManager::getSourceNames() {
     return names;
 }
 
+std::string SourceManager::getSelectedName() {
+    return selectedName;
+}
+
 void SourceManager::selectSource(std::string name) {
     if (sources.find(name) == sources.end()) {
         flog::error("Tried to select non existent source: {0}", name);
@@ -88,6 +92,13 @@ void SourceManager::tune(double freq) {
     selectedHandler->tuneHandler(abs(((tuneMode == TuningMode::NORMAL) ? freq : ifFreq) + tuneOffset), selectedHandler->ctx);
     onRetune.emit(freq);
     currentFreq = freq;
+}
+
+void SourceManager::setGain(double gain) {
+    if (selectedHandler == NULL || selectedHandler->gainHandler == NULL) {
+        return;
+    }
+    selectedHandler->gainHandler(gain, selectedHandler->ctx);
 }
 
 void SourceManager::setTuningOffset(double offset) {
