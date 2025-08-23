@@ -134,9 +134,13 @@ if (Test-Path $TestExe) {
             $process.Kill()
             Test-Result $true "Application starts without immediate crash (timeout)"
         } else {
-            $exitCode = $process.ExitCode
-            $startupOk = ($exitCode -eq 0) -or ($exitCode -eq 1)
-            Test-Result $startupOk "Application startup test (exit code: $exitCode)"
+            if ($process.HasExited) {
+                $exitCode = $process.ExitCode
+                $startupOk = ($exitCode -eq 0) -or ($exitCode -eq 1)
+                Test-Result $startupOk "Application startup test (exit code: $exitCode)"
+            } else {
+                Test-Result $false "Application startup test (process still running)"
+            }
         }
     }
     catch {

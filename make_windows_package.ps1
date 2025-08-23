@@ -104,4 +104,5 @@ cp 'C:/Program Files/PothosSDR/bin/pthreadVC2.dll' sdrpp_windows_x64/
 
 Compress-Archive -Path sdrpp_windows_x64/ -DestinationPath sdrpp_windows_x64.zip
 
-rm -Force -Recurse sdrpp_windows_x64
+# Keep directory for CI testing - don't delete it
+# rm -Force -Recurse sdrpp_windows_x64
