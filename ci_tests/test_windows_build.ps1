@@ -119,32 +119,32 @@ $TestExe = if ($PackageDir -and (Test-Path "$PackageDir\sdrpp_ce.exe")) {
 
 if (Test-Path $TestExe) {
     try {
-        $tempOut = [System.IO.Path]::GetTempFileName()
-        $tempErr = [System.IO.Path]::GetTempFileName()
+        # Use simpler approach - just run the exe and capture exit code
+        $startTime = Get-Date
+        $job = Start-Job -ScriptBlock { 
+            param($exe)
+            & $exe --help 2>$null >$null
+            return $LASTEXITCODE
+        } -ArgumentList $TestExe
         
-        $process = Start-Process -FilePath $TestExe -ArgumentList "--help" -NoNewWindow -PassThru -RedirectStandardOutput $tempOut -RedirectStandardError $tempErr
+        # Wait up to 5 seconds for completion
+        $completed = Wait-Job $job -Timeout 5
         
-        # Clean up temp files after process starts
-        Start-Sleep -Milliseconds 100
-        Remove-Item $tempOut -ErrorAction SilentlyContinue
-        Remove-Item $tempErr -ErrorAction SilentlyContinue
-        $finished = $process.WaitForExit(5000)
-        
-        if (!$finished) {
-            $process.Kill()
-            Test-Result $true "Application starts without immediate crash (timeout)"
+        if ($completed) {
+            $exitCode = Receive-Job $job
+            Remove-Job $job
+            
+            if ($null -eq $exitCode) { $exitCode = "null" }
+            $startupOk = ($exitCode -eq 0) -or ($exitCode -eq 1)
+            Test-Result $startupOk "Application startup test (exit code: $exitCode)"
         } else {
-            if ($process.HasExited) {
-                $exitCode = $process.ExitCode
-                $startupOk = ($exitCode -eq 0) -or ($exitCode -eq 1)
-                Test-Result $startupOk "Application startup test (exit code: $exitCode)"
-            } else {
-                Test-Result $false "Application startup test (process still running)"
-            }
+            # Job timed out - this means app started but didn't exit quickly (good sign)
+            Remove-Job $job -Force
+            Test-Result $true "Application starts without immediate crash (timeout - good sign)"
         }
     }
     catch {
-        Test-Result $false "Application startup test (exception occurred)"
+        Test-Result $false "Application startup test (exception: $($_.Exception.Message))"
     }
 } else {
     Test-Result $false "Executable not found for startup test"
