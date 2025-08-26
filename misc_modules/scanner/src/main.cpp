@@ -11,6 +11,7 @@
 #include <sstream>
 #include <cstring>  // For memcpy
 #include <set>      // For std::set in profile diagnostics
+#include "scanner_log.h" // Custom logging macros
 
 // Windows MSVC compatibility 
 #ifdef _WIN32
@@ -227,7 +228,7 @@ public:
                 flog::info("Scanner: Applied gain {:.1f} dB for range '{}' (source: {})",
                           targetGain, frequencyRanges[rangeIdx].name, sourceName);
             } else {
-                flog::debug("Scanner: No source selected, cannot apply gain for range '{}'",
+                SCAN_DEBUG("Scanner: No source selected, cannot apply gain for range '{}'",
                           frequencyRanges[rangeIdx].name);
             }
         } catch (const std::exception& e) {
@@ -377,7 +378,7 @@ private:
         
         // DISCRETE SLIDER: Show actual values with units instead of indices
         if (ImGui::SliderInt("##interval_scanner_discrete", &_this->intervalIndex, 0, _this->INTERVAL_VALUES_COUNT - 1, _this->INTERVAL_LABELS[_this->intervalIndex])) {
-            flog::debug("Scanner: Interval slider changed to index {} ({})", _this->intervalIndex, _this->INTERVAL_LABELS[_this->intervalIndex]);
+            SCAN_DEBUG("Scanner: Interval slider changed to index {} ({})", _this->intervalIndex, _this->INTERVAL_LABELS[_this->intervalIndex]);
             _this->syncDiscreteValues(); // Update actual interval value
             _this->saveConfig();
         }
@@ -391,11 +392,32 @@ private:
         
         // PERFORMANCE: Configurable scan rate (consistent across all modes)
         ImGui::LeftLabel("Scan Rate");
+        
+        // Add unlock higher speed toggle with parameterized max rate
+        char unlockLabel[64];
+        snprintf(unlockLabel, sizeof(unlockLabel), "Unlock high-speed scanning (up to %d Hz)", MAX_SCAN_RATE);
+        if (ImGui::Checkbox(unlockLabel, &_this->unlockHighSpeed)) {
+            _this->saveConfig();
+            // Adjust scan rate index if needed when toggling
+            if (!_this->unlockHighSpeed && _this->scanRateIndex >= _this->SCAN_RATE_NORMAL_COUNT) {
+                _this->scanRateIndex = _this->SCAN_RATE_NORMAL_COUNT - 1;
+                _this->syncDiscreteValues();
+            }
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Enable scan rates up to %d Hz (default max is %d Hz)\n"
+                             "WARNING: High scan rates may overload your CPU\n"
+                             "and could cause missed signals or unstable operation",
+                             MAX_SCAN_RATE, NORMAL_MAX_SCAN_RATE);
+        }
+        
         ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
         
         // DISCRETE SLIDER: Show actual values with units instead of indices
-        if (ImGui::SliderInt("##scan_rate_discrete", &_this->scanRateIndex, 0, _this->SCAN_RATE_VALUES_COUNT - 1, _this->SCAN_RATE_LABELS[_this->scanRateIndex])) {
-            flog::debug("Scanner: Scan rate slider changed to index {} ({})", _this->scanRateIndex, _this->SCAN_RATE_LABELS[_this->scanRateIndex]);
+        // Use different max index based on unlock status
+        int maxIndex = _this->unlockHighSpeed ? _this->SCAN_RATE_VALUES_COUNT - 1 : _this->SCAN_RATE_NORMAL_COUNT - 1;
+        if (ImGui::SliderInt("##scan_rate_discrete", &_this->scanRateIndex, 0, maxIndex, _this->SCAN_RATE_LABELS[_this->scanRateIndex])) {
+            SCAN_DEBUG("Scanner: Scan rate slider changed to index {} ({})", _this->scanRateIndex, _this->SCAN_RATE_LABELS[_this->scanRateIndex]);
             _this->syncDiscreteValues(); // Update actual scan rate value
             _this->saveConfig();
         }
@@ -411,7 +433,7 @@ private:
         if (ImGui::SliderInt("##passband_ratio_discrete", &_this->passbandIndex, 0, _this->PASSBAND_VALUES_COUNT - 1, _this->PASSBAND_FORMATS[_this->passbandIndex])) {
             _this->syncDiscreteValues(); // Update actual passband ratio value
             _this->saveConfig();
-            flog::debug("Scanner: Passband slider changed to index {} ({})", _this->passbandIndex, _this->PASSBAND_LABELS[_this->passbandIndex]);
+            SCAN_DEBUG("Scanner: Passband slider changed to index {} ({})", _this->passbandIndex, _this->PASSBAND_LABELS[_this->passbandIndex]);
         }
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Signal detection bandwidth as percentage of VFO width\n"
@@ -420,21 +442,76 @@ private:
         }
         ImGui::LeftLabel("Tuning Time (ms)");
         ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-        if (ImGui::InputInt("##tuning_time_scanner", &_this->tuningTime, 100, 1000)) {
-            _this->tuningTime = std::clamp<int>(_this->tuningTime, 100, 10000);
+        // Use smaller step sizes when in high-speed mode
+        int step = _this->unlockHighSpeed ? 5 : 100;
+        int step_fast = _this->unlockHighSpeed ? 50 : 1000;
+        if (ImGui::InputInt("##tuning_time_scanner", &_this->tuningTime, step, step_fast)) {
+            // Allow shorter tuning times for high-speed scanning
+            const int minTime = _this->unlockHighSpeed ? MIN_TUNING_TIME : 100;
+            _this->tuningTime = std::clamp<int>(_this->tuningTime, minTime, 10000);
+            // If user manually adjusts tuning time, turn off auto mode
+            if (_this->tuningTimeAuto) {
+                _this->tuningTimeAuto = false;
+                flog::info("Scanner: Auto tuning time adjustment disabled due to manual edit");
+            }
             _this->saveConfig();
         }
-        if (ImGui::IsItemHovered()) {
+                if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Time to wait after tuning before checking for signals (ms)\n"
                              "Allows hardware and DSP to settle after frequency change\n"
                              "TIP: Increase if missing signals (slow hardware)\n"
                              "Decrease for faster scanning (stable hardware)\n"
-                             "Range: 100ms - 10000ms, default: 250ms");
+                             "Range: %dms - 10000ms, default: 250ms%s",
+                             _this->unlockHighSpeed ? MIN_TUNING_TIME : 100,
+                             _this->unlockHighSpeed ? "\nFor high-speed scanning (>50Hz), use 10-50ms" : "");
+        }
+        
+        // Auto-adjust tuning time based on scan rate (available at all scan rates)
+        ImGui::SameLine();
+        if (ImGui::Button(_this->tuningTimeAuto ? "Auto-Adjust (ON)" : "Auto-Adjust")) {
+            // Toggle auto-adjust mode
+            _this->tuningTimeAuto = !_this->tuningTimeAuto;
+            
+            // If turning on, immediately apply the scaling formula
+            if (_this->tuningTimeAuto) {
+                // Use the same scaling formula as in the worker thread
+                
+                // Calculate optimal tuning time that scales with scan rate
+                const int optimalTime = std::max(
+                    MIN_TUNING_TIME, 
+                    static_cast<int>((BASE_TUNING_TIME * BASE_SCAN_RATE) / static_cast<int>(_this->scanRateHz))
+                );
+                
+                _this->tuningTime = optimalTime;
+                flog::info("Scanner: Auto-adjusted tuning time to {}ms for {}Hz scan rate", 
+                          _this->tuningTime, _this->scanRateHz);
+            }
+            
+            _this->saveConfig();
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Toggle automatic tuning time adjustment based on scan rate\n"
+                             "When ON: Tuning time will automatically scale with scan rate\n"
+                             "Formula: tuningTime = %dms * (%dHz / currentRate)\n"
+                             "Examples:\n"
+                             "- %dHz scan rate: ~%dms tuning time\n"
+                             "- %dHz scan rate: ~%dms tuning time\n"
+                             "- %dHz scan rate: %dms tuning time\n"
+                             "- %dHz scan rate: %dms tuning time",
+                             BASE_TUNING_TIME, BASE_SCAN_RATE,
+                             MAX_SCAN_RATE, BASE_TUNING_TIME * BASE_SCAN_RATE / MAX_SCAN_RATE,
+                             100, BASE_TUNING_TIME * BASE_SCAN_RATE / 100,
+                             BASE_SCAN_RATE, BASE_TUNING_TIME,
+                             25, BASE_TUNING_TIME * BASE_SCAN_RATE / 25);
         }
         ImGui::LeftLabel("Linger Time (ms)");
         ImGui::SetNextItemWidth(menuWidth - ImGui::GetCursorPosX());
-        if (ImGui::InputInt("##linger_time_scanner", &_this->lingerTime, 100, 1000)) {
-            _this->lingerTime = std::clamp<int>(_this->lingerTime, 100, 10000);
+        // Use smaller step sizes when in high-speed mode
+        int lingerStep = _this->unlockHighSpeed ? 10 : 100;
+        int lingerStepFast = _this->unlockHighSpeed ? 100 : 1000;
+        if (ImGui::InputInt("##linger_time_scanner", &_this->lingerTime, lingerStep, lingerStepFast)) {
+            const int minLinger = _this->unlockHighSpeed ? MIN_LINGER_TIME : 100;
+            _this->lingerTime = std::clamp<int>(_this->lingerTime, minLinger, 10000);
             _this->saveConfig();
         }
         if (ImGui::IsItemHovered()) {
@@ -442,7 +519,47 @@ private:
                              "Scanner pauses to let you listen to the signal\n"
                              "TIP: Longer times for voice communications (2000+ ms)\n"
                              "Shorter times for quick signal identification (500-1000 ms)\n"
-                             "Range: 100ms - 10000ms, default: 1000ms");
+                             "Range: %dms - 10000ms, default: %dms\n"
+                             "For high scan rates (>%dHz), consider using %d-%dms",
+                             _this->unlockHighSpeed ? MIN_LINGER_TIME : 100,
+                             BASE_LINGER_TIME,
+                             NORMAL_MAX_SCAN_RATE,
+                             MIN_LINGER_TIME,
+                             BASE_LINGER_TIME / 2);
+        }
+        
+        // Add linger time auto-adjust button when auto-adjust is enabled for tuning time
+        if (_this->tuningTimeAuto) {
+            ImGui::SameLine();
+            if (ImGui::Button("Scale Linger")) {
+                // Use a similar scaling formula as tuning time, but with different base values
+                // Linger time should be longer than tuning time
+                
+                // Calculate optimal linger time that scales with scan rate
+                const int optimalTime = std::max(
+                    MIN_LINGER_TIME, 
+                    static_cast<int>((BASE_LINGER_TIME * BASE_SCAN_RATE) / static_cast<int>(_this->scanRateHz))
+                );
+                
+                _this->lingerTime = optimalTime;
+                _this->saveConfig();
+                flog::info("Scanner: Scaled linger time to {}ms for {}Hz scan rate", 
+                          _this->lingerTime, _this->scanRateHz);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Scale linger time based on scan rate (one-time adjustment)\n"
+                                 "Formula: lingerTime = %dms * (%dHz / currentRate)\n"
+                                 "Examples:\n"
+                                 "- %dHz scan rate: ~%dms linger time\n"
+                                 "- %dHz scan rate: ~%dms linger time\n"
+                                 "- %dHz scan rate: %dms linger time\n"
+                                 "- %dHz scan rate: %dms linger time",
+                                 BASE_LINGER_TIME, BASE_SCAN_RATE,
+                                 MAX_SCAN_RATE, BASE_LINGER_TIME * BASE_SCAN_RATE / MAX_SCAN_RATE,
+                                 100, BASE_LINGER_TIME * BASE_SCAN_RATE / 100,
+                                 BASE_SCAN_RATE, BASE_LINGER_TIME,
+                                 25, BASE_LINGER_TIME * BASE_SCAN_RATE / 25);
+            }
         }
         // LIVE PARAMETERS: No more disabling - all can be changed during scanning!
 
@@ -544,7 +661,7 @@ private:
                         std::lock_guard<std::mutex> lck(_this->scanMtx);
                         _this->receiving = false;
                     }
-                    flog::debug("Scanner: Auto-resuming scanning after blacklisting frequency");
+                    SCAN_DEBUG("Scanner: Auto-resuming scanning after blacklisting frequency");
                     
                 } else {
                     flog::warn("Scanner: Frequency {:.0f} Hz already blacklisted (within tolerance)", currentFreq);
@@ -801,6 +918,8 @@ private:
         // Save squelch delta settings
         config.conf["squelchDelta"] = squelchDelta;
         config.conf["squelchDeltaAuto"] = squelchDeltaAuto;
+        config.conf["unlockHighSpeed"] = unlockHighSpeed;
+        config.conf["tuningTimeAuto"] = tuningTimeAuto;
         
         // Save frequency ranges
         json rangesArray = json::array();
@@ -841,6 +960,8 @@ private:
         // Load squelch delta settings
         squelchDelta = config.conf.value("squelchDelta", 2.5f);
         squelchDeltaAuto = config.conf.value("squelchDeltaAuto", false);
+        unlockHighSpeed = config.conf.value("unlockHighSpeed", false);
+        tuningTimeAuto = config.conf.value("tuningTimeAuto", false);
         
         // Initialize time points
         lastNoiseUpdate = std::chrono::high_resolution_clock::now();
@@ -898,12 +1019,58 @@ private:
     void worker() {
         flog::info("Scanner: Worker thread started");
         try {
+            // Initialize timer for sleep_until to reduce drift
+            auto nextWakeTime = std::chrono::steady_clock::now();
+            
             // PERFORMANCE-CRITICAL: Configurable scan rate (consistent across all modes)
             while (running) {
-                // Implement actual scan rate control (was hardcoded at 100ms)
-                int clampedRate = std::clamp(scanRateHz, 5, 50);  // Safety bounds
-                int intervalMs = 1000 / clampedRate;
-                std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
+                    // Implement actual scan rate control with different max based on unlock status
+                    // Safety guard against division by zero and enforce limits
+                    const int maxHz = unlockHighSpeed ? MAX_SCAN_RATE : NORMAL_MAX_SCAN_RATE;
+                    const int safeRate = std::clamp(scanRateHz, MIN_SCAN_RATE, maxHz);
+                    const int intervalMs = std::max(1, 1000 / safeRate);
+                    
+                    // Use sleep_until with steady_clock to reduce drift and jitter
+                    
+                    // Dynamically scale tuning time based on scan rate when auto mode is enabled
+                    // This ensures we don't wait too long between frequencies
+                    // Formula: tuningTime = BASE_TUNING_TIME * (BASE_SCAN_RATE / currentScanRate)
+                    // This creates an inverse relationship - faster scanning = shorter tuning time
+                    
+                    // Only recalculate when auto mode is on and scan rate changes
+                    static int lastAdjustedRate = 0;
+                    if (tuningTimeAuto && safeRate != lastAdjustedRate) {
+                        // Calculate optimal tuning time that scales with scan rate
+                        const int optimalTime = std::max(
+                            MIN_TUNING_TIME, 
+                            static_cast<int>((BASE_TUNING_TIME * BASE_SCAN_RATE) / static_cast<int>(safeRate))
+                        );
+                        
+                        // Only adjust if current tuning time is significantly different
+                        if (std::abs(tuningTime - optimalTime) > 10) {
+                            tuningTime = optimalTime;
+                            flog::info("Scanner: Auto-scaled tuning time to {}ms for {}Hz scan rate", 
+                                      tuningTime, safeRate);
+                        }
+                        lastAdjustedRate = safeRate;
+                    }
+                    
+                    // Add debug logging to verify the actual scan rate being used
+                    // Log status every 500ms instead of counting iterations
+                    static Throttle statusLogThrottle{std::chrono::milliseconds(500)};
+                    if (statusLogThrottle.ready()) {
+                        SCAN_DEBUG("Scanner: Current scan rate: {} Hz (interval: {} ms, tuning time: {} ms)", 
+                                 safeRate, intervalMs, tuningTime);
+                    }
+                    
+                    // Sleep until next scheduled time to reduce drift
+                    // Reset nextWakeTime if we've fallen too far behind to prevent catch-up bursts
+                    auto now = std::chrono::steady_clock::now();
+                    if (nextWakeTime + std::chrono::milliseconds(2*intervalMs) < now) {
+                        nextWakeTime = now;
+                    }
+                    nextWakeTime += std::chrono::milliseconds(intervalMs);
+                    std::this_thread::sleep_until(nextWakeTime);
                 
                 try {
                     std::lock_guard<std::mutex> lck(scanMtx);
@@ -950,11 +1117,11 @@ private:
 
                 // Check if we are waiting for a tune
                 if (tuning) {
-                    flog::debug("Scanner: Tuning in progress...");
+                    SCAN_DEBUG("Scanner: Tuning in progress...");
                     auto timeSinceLastTune = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTuneTime);
                     if (timeSinceLastTune.count() > tuningTime) {
                         tuning = false;
-                        flog::debug("Scanner: Tuning completed");
+                        SCAN_DEBUG("Scanner: Tuning completed");
                     }
                     continue;
                 }
@@ -1012,7 +1179,7 @@ private:
                 }
 
                 if (receiving) {
-                    flog::debug("Scanner: Receiving signal...");
+                    SCAN_DEBUG("Scanner: Receiving signal...");
                 
                     float maxLevel = getMaxLevel(data, current, effectiveVfoWidth, dataWidth, wfStart, wfWidth);
                     if (maxLevel >= level) {
@@ -1037,7 +1204,7 @@ private:
                             }
                             
                             receiving = false;
-                            flog::debug("Scanner: Signal lost, resuming scanning");
+                            SCAN_DEBUG("Scanner: Signal lost, resuming scanning");
                         }
                     }
                 }
@@ -1063,14 +1230,14 @@ private:
                                 }
                             } else {
                                 if (applyProfiles && !currentTuningProfile) {
-                                    flog::debug("Scanner: No profile available for {:.6f} MHz (Index:{})", current / 1e6, (int)currentScanIndex);
+                                    SCAN_DEBUG("Scanner: No profile available for {:.6f} MHz (Index:{})", current / 1e6, (int)currentScanIndex);
                                 }
                             }
                             
                             continue; // Signal found, stay on this frequency
                         }
                         // No signal at exact frequency - continue to frequency stepping
-                        flog::debug("Scanner: No signal at single frequency {:.6f} MHz (level: {:.1f} < {:.1f})", current / 1e6, maxLevel, level);
+                        SCAN_DEBUG("Scanner: No signal at single frequency {:.6f} MHz (level: {:.1f} < {:.1f})", current / 1e6, maxLevel, level);
                     } else {
                         // BAND SCANNING: Search for signals across range using interval stepping
                         if (findSignal(scanUp, bottomLimit, topLimit, wfStart, wfEnd, wfWidth, effectiveVfoWidth, data, dataWidth)) {
@@ -1246,7 +1413,7 @@ private:
                     }
                 } else {
                     if (useFrequencyManager && applyProfiles && !currentTuningProfile) {
-                        flog::debug("Scanner: No profile available for {:.6f} MHz BAND (Index:{})", freq / 1e6, (int)currentScanIndex);
+                        SCAN_DEBUG("Scanner: No profile available for {:.6f} MHz BAND (Index:{})", freq / 1e6, (int)currentScanIndex);
                     }
                 }
                 
@@ -1258,7 +1425,7 @@ private:
 
     // DISCRETE PARAMETER HELPERS: Sync indices with actual values
     void initializeDiscreteIndices() {
-        flog::debug("Scanner: initializeDiscreteIndices() called - BEFORE: passbandIndex={}, passbandRatio={}", passbandIndex, passbandRatio);
+        SCAN_DEBUG("Scanner: initializeDiscreteIndices() called - BEFORE: passbandIndex={}, passbandRatio={}", passbandIndex, passbandRatio);
         // Find closest interval index
         intervalIndex = 4; // Default to 100 kHz
         double minDiff = std::abs(interval - INTERVAL_VALUES_HZ[intervalIndex]);
@@ -1291,14 +1458,14 @@ private:
                 minPassbandDiff = diff;
             }
         }
-        flog::debug("Scanner: initializeDiscreteIndices() completed - AFTER: passbandIndex={}, passbandRatio={}", passbandIndex, passbandRatio);
+        SCAN_DEBUG("Scanner: initializeDiscreteIndices() completed - AFTER: passbandIndex={}, passbandRatio={}", passbandIndex, passbandRatio);
     }
     
     void syncDiscreteValues() {
         interval = INTERVAL_VALUES_HZ[intervalIndex];
         scanRateHz = SCAN_RATE_VALUES[scanRateIndex];
         passbandRatio = PASSBAND_VALUES[passbandIndex];
-        flog::debug("Scanner: syncDiscreteValues - passbandIndex={}, passbandRatio={}", passbandIndex, passbandRatio);
+        SCAN_DEBUG("Scanner: syncDiscreteValues - passbandIndex={}, passbandRatio={}", passbandIndex, passbandRatio);
     }
     
     // BLACKLIST: Helper function for consistent blacklist checking
@@ -1331,7 +1498,7 @@ private:
             
             if (!core::modComManager.callInterface("frequency_manager", CMD_GET_BOOKMARK_NAME, 
                                                  const_cast<double*>(&frequency), &bookmarkName)) {
-                flog::debug("Scanner: Failed to call frequency manager getBookmarkName interface");
+                SCAN_DEBUG("Scanner: Failed to call frequency manager getBookmarkName interface");
                 frequencyNameCache[frequency] = ""; // Cache the empty result
                 return "";
             }
@@ -1341,7 +1508,7 @@ private:
             return bookmarkName;
             
         } catch (const std::exception& e) {
-            flog::debug("Scanner: Error looking up frequency manager name: {}", e.what());
+            SCAN_DEBUG("Scanner: Error looking up frequency manager name: {}", e.what());
             frequencyNameCache[frequency] = ""; // Cache the empty result
             return "";
         }
@@ -1354,7 +1521,7 @@ private:
             lastAppliedVFO == vfoName && 
             std::abs(lastProfileFrequency - frequency) < 1000.0) { // Within 1 kHz
             
-            flog::debug("{}: SKIPPED redundant profile '{}' for {:.6f} MHz (already applied)", 
+            SCAN_DEBUG("{}: SKIPPED redundant profile '{}' for {:.6f} MHz (already applied)", 
                        context, profile.name.empty() ? "Auto" : profile.name, frequency / 1e6);
             return false; // Skipped - no change needed
         }
@@ -1592,7 +1759,7 @@ private:
                                     applyTuningProfileSmart(*profile, gui::waterfall.selectedVFO, testScanList[i], "STARTUP");
                                 }
                             } else {
-                                flog::debug("Scanner: INIT NULL PROFILE for start freq {:.6f} MHz (Index:{})", 
+                                SCAN_DEBUG("Scanner: INIT NULL PROFILE for start freq {:.6f} MHz (Index:{})", 
                                            testScanList[i] / 1e6, (int)i);
                             }
                         } else {
@@ -1634,7 +1801,7 @@ private:
                                 applyTuningProfileSmart(*profile, gui::waterfall.selectedVFO, current, "INITIAL");
                             }
                         } else {
-                            flog::debug("Scanner: LOOKUP NULL PROFILE for current freq {:.6f} MHz (Index:{})", 
+                            SCAN_DEBUG("Scanner: LOOKUP NULL PROFILE for current freq {:.6f} MHz (Index:{})", 
                                        current / 1e6, (int)i);
                         }
                     } else {
@@ -1681,7 +1848,7 @@ private:
                             applyTuningProfileSmart(*profile, gui::waterfall.selectedVFO, current, "PREEMPTIVE");
                         }
                     } else {
-                        flog::debug("Scanner: TRACKING NULL PROFILE for {:.6f} MHz (Index:{})", 
+                        SCAN_DEBUG("Scanner: TRACKING NULL PROFILE for {:.6f} MHz (Index:{})", 
                                    current / 1e6, (int)currentScanIndex);
                     }
                 } else {
@@ -1697,7 +1864,7 @@ private:
                     // Found a non-blacklisted frequency
                     break;
                 } else {
-                    flog::debug("Scanner: Skipping blacklisted frequency {:.3f} MHz", current / 1e6);
+                    SCAN_DEBUG("Scanner: Skipping blacklisted frequency {:.3f} MHz", current / 1e6);
                     // Continue to next frequency
                 }
                 
@@ -1729,7 +1896,7 @@ private:
             tuning = true;
             lastTuneTime = std::chrono::high_resolution_clock::now();
             
-            flog::debug("Scanner: Stepped to non-blacklisted frequency {:.6f} MHz ({})", 
+            SCAN_DEBUG("Scanner: Stepped to non-blacklisted frequency {:.6f} MHz ({})", 
                        current / 1e6, currentEntryIsSingleFreq ? "single freq" : "band");
             
             return true; // Successfully performed FM frequency stepping
@@ -1800,7 +1967,7 @@ private:
         if (!core::modComManager.callInterface(gui::waterfall.selectedVFO, 
                                            RADIO_IFACE_CMD_GET_SQUELCH_LEVEL, 
                                            NULL, &squelchLevel)) {
-            flog::debug("Scanner: Failed to get squelch level");
+            SCAN_DEBUG("Scanner: Failed to get squelch level");
         }
         
         return squelchLevel;
@@ -1820,7 +1987,7 @@ private:
         if (!core::modComManager.callInterface(gui::waterfall.selectedVFO, 
                                            RADIO_IFACE_CMD_SET_SQUELCH_LEVEL, 
                                            &newLevel, NULL)) {
-            flog::debug("Scanner: Failed to set squelch level");
+            SCAN_DEBUG("Scanner: Failed to set squelch level");
         }
     }
     
@@ -1955,7 +2122,7 @@ private:
     double current = 88000000.0;
     double passbandRatio = 10.0;
     int tuningTime = 250;
-    int lingerTime = 1000.0;
+    int lingerTime = 1000;
     float level = -50.0;
     bool receiving = false;  // Should start as false, not receiving initially
     bool tuning = false;
@@ -1984,9 +2151,23 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> lastNoiseUpdate; // Time of last noise floor update
     std::chrono::time_point<std::chrono::high_resolution_clock> tuneTime; // Time of last frequency tuning
     
+    // High speed scanning options
+    bool unlockHighSpeed = false; // Whether to allow scan rates above 50Hz (up to 200Hz)
+    bool tuningTimeAuto = false; // Whether to automatically adjust tuning time based on scan rate
+    
     // Constants for squelch limits
     const float MIN_SQUELCH = -100.0f;
     const float MAX_SQUELCH = 0.0f;
+    
+    // Constants for scan rate and timing scaling
+    static constexpr int BASE_SCAN_RATE = 50;        // Reference scan rate (Hz)
+    static constexpr int BASE_TUNING_TIME = 250;     // Reference tuning time (ms) at 50Hz
+    static constexpr int BASE_LINGER_TIME = 1000;    // Reference linger time (ms) at 50Hz
+    static constexpr int MIN_TUNING_TIME = 10;       // Absolute minimum tuning time (ms)
+    static constexpr int MIN_LINGER_TIME = 50;       // Absolute minimum linger time (ms)
+    static constexpr int MAX_SCAN_RATE = 200;        // Maximum scan rate (Hz) when unlocked
+    static constexpr int MIN_SCAN_RATE = 5;          // Minimum scan rate (Hz)
+    static constexpr int NORMAL_MAX_SCAN_RATE = 50;  // Maximum scan rate (Hz) in normal mode
     
     // UI state for range management
     bool showRangeManager = false;
@@ -2016,9 +2197,11 @@ private:
     static constexpr int INTERVAL_VALUES_COUNT = 6;
     int intervalIndex = 4; // Default to 100 kHz (index 4)
     
-    static constexpr int SCAN_RATE_VALUES[] = {1, 2, 5, 10, 15, 20, 25, 30, 40, 50};
-    static constexpr const char* SCAN_RATE_LABELS[] = {"1/sec", "2/sec", "5/sec", "10/sec", "15/sec", "20/sec", "25/sec", "30/sec", "40/sec", "50/sec"};
-    static constexpr int SCAN_RATE_VALUES_COUNT = 10;
+    static constexpr int SCAN_RATE_VALUES[] = {1, 2, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100, 125, 150, 175, 200};
+    static constexpr const char* SCAN_RATE_LABELS[] = {"1/sec", "2/sec", "5/sec", "10/sec", "15/sec", "20/sec", "25/sec", "30/sec", "40/sec", "50/sec", 
+                                                      "75/sec", "100/sec", "125/sec", "150/sec", "175/sec", "200/sec"};
+    static constexpr int SCAN_RATE_VALUES_COUNT = 16;
+    static constexpr int SCAN_RATE_NORMAL_COUNT = 10;  // First 10 values (up to 50/sec) are normal speed
     int scanRateIndex = 6; // Default to 25/sec (index 6, recommended starting point)
     
     static constexpr int PASSBAND_VALUES[] = {5, 10, 20, 30, 50, 75, 100};
@@ -2047,8 +2230,10 @@ MOD_EXPORT void _INIT_() {
     def["blacklistedFreqs"] = json::array();
     
     // Squelch delta settings
-    def["squelchDelta"] = 2.5f;
-    def["squelchDeltaAuto"] = false;
+            def["squelchDelta"] = 2.5f;
+        def["squelchDeltaAuto"] = false;
+        def["unlockHighSpeed"] = false;
+        def["tuningTimeAuto"] = false;
     
     // Scanning direction preference 
     def["scanUp"] = true; // Default to increasing frequency
