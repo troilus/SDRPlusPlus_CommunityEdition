@@ -838,11 +838,51 @@ jobs:
             mv sdrpp_ubuntu_oracular_aarch64/sdrpp_debian_amd64.deb sdrpp_all/sdrpp_ubuntu_oracular_aarch64.deb &&
             mv sdrpp_android/sdrpp.apk sdrpp_all/sdrpp.apk
 
-        - uses: actions/upload-artifact@v4
+        # download the artifact into a predictable folder
+        - uses: actions/download-artifact@v4
           with:
             name: sdrpp_all
-            path: sdrpp_all/*
+            path: sdrpp_all
+        
+        # quick visibility into what we actually have
+        - name: Debug tree
+          run: |
+            pwd
+            ls -la
+            echo
+            ls -la sdrpp_all
+        
+        # ensure tag & release exist (idempotent)
+        - name: Ensure nightly tag & release
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            set -euo pipefail
+            git config --global user.name  "github-actions[bot]"
+            git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -fa nightly "$GITHUB_SHA" -m "nightly $(date -u +%FT%TZ)"
+            git push -f origin refs/tags/nightly
+            gh release view nightly >/dev/null || \
+              gh release create nightly -t "SDR++ CE Nightly" -n "Auto-updated nightly build assets"
+        
+        # upload assets one by one (avoids very long argv issues)
+        - name: Upload assets to nightly
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            set -euo pipefail
+            shopt -s nullglob
+            files=(sdrpp_all/*)
+            if [ ${#files[@]} -eq 0 ]; then
+              echo "No files found in sdrpp_all/"; exit 1
+            fi
+            for f in "${files[@]}"; do
+              [ -f "$f" ] || continue
+              echo "Uploading: $f"
+              gh release upload nightly "$f" --clobber -R "$GITHUB_REPOSITORY"
+            done
 
+        
     update_nightly_release:
         needs: [create_full_archive]
         runs-on: ubuntu-latest
