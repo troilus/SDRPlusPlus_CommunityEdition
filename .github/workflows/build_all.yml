@@ -846,101 +846,55 @@ jobs:
             ls -la
             echo
             ls -la sdrpp_all
-        
-        # ensure tag & release exist (idempotent)
-        - name: Ensure nightly tag & release
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: |
-            set -euo pipefail
-            git config --global user.name  "github-actions[bot]"
-            git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git tag -fa nightly "$GITHUB_SHA" -m "nightly $(date -u +%FT%TZ)"
-            git push -f origin refs/tags/nightly
-            gh release view nightly >/dev/null || \
-              gh release create nightly -t "SDR++ CE Nightly" -n "Auto-updated nightly build assets"
-        
-        # upload assets one by one (avoids very long argv issues)
-        - name: Upload assets to nightly
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: |
-            set -euo pipefail
-            shopt -s nullglob
-            files=(sdrpp_all/*)
-            if [ ${#files[@]} -eq 0 ]; then
-              echo "No files found in sdrpp_all/"; exit 1
-            fi
-            for f in "${files[@]}"; do
-              [ -f "$f" ] || continue
-              echo "Uploading: $f"
-              gh release upload nightly "$f" --clobber -R "$GITHUB_REPOSITORY"
-            done
 
         
-    update_nightly_release:
-        needs: [create_full_archive]
-        runs-on: ubuntu-latest
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        permissions:
-          contents: write
-        concurrency:
-          group: nightly-publish
-          cancel-in-progress: true
+update_nightly_release:
+  needs: create_full_archive
+  if: github.event_name == 'push' && github.ref == 'refs/heads/master' # or main
+  runs-on: ubuntu-latest
+  permissions:
+    contents: write  # needed to push tags & upload release assets
+  steps:
+    - name: Checkout (needed for git tag/push)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-        steps:
-        - name: Download All Builds
-          uses: actions/download-artifact@v4
-          
-        - uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
+    - name: Point origin to tokened URL
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
-        - name: Create Nightly Release (if needed)
-          run: |
-            # Check if nightly release exists, create if not
-            if ! gh release view nightly -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-              echo "Creating nightly release..."
-              gh release create nightly \
-                --title "Nightly Build" \
-                --notes "**Automated nightly builds of SDR++CE Community Edition**
+    - name: Ensure nightly tag & release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ github.token }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        git config --global user.name  "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-            These builds are automatically updated with the latest changes from the master branch. They include all platforms and are built fresh with each commit.
+        git tag -fa nightly "$GITHUB_SHA" -m "nightly $(date -u +%FT%TZ)"
+        git push -f origin refs/tags/nightly
 
-            **⚠️ Note:** Nightly builds may contain experimental features and should be used for testing purposes.
+        # create release if missing (targets current SHA)
+        gh release view nightly >/dev/null 2>&1 || \
+          gh release create nightly -t "SDR++ CE Nightly" -n "Auto-updated nightly build assets" --target "$GITHUB_SHA"
 
-            **📦 Available Builds:**
-            - Windows x64 package
-            - macOS Intel & ARM app bundles  
-            - Linux packages (Ubuntu, Debian)
-            - Android APK
+    - name: Download consolidated artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sdrpp_all
+        path: sdrpp_all
 
-            **🔄 Last Updated:** This release is automatically updated with each commit to master." \
-                --prerelease \
-                -R "$GITHUB_REPOSITORY"
-            else
-              echo "Nightly release already exists"
-            fi
+    - name: Upload assets to nightly (clobber to overwrite)
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release upload nightly sdrpp_all/* --clobber
 
-        - name: Update Nightly Tag and Assets
-          # No need to set GH_TOKEN again as it's defined at the workflow level
-          run: |
-            # Configure git with canonical bot identity
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            
-            # Create annotated tag with timestamp and push only the tag reference
-            git tag -fa nightly "$GITHUB_SHA" -m "nightly $(date -u +%FT%TZ)"
-            git push -f origin refs/tags/nightly
-            
-            # Update release assets (release is created earlier in the workflow)
-            set -euo pipefail
-            shopt -s nullglob
-            files=(sdrpp_all/*)
-            if (( ${#files[@]} == 0 )); then
-              echo "No artifacts in sdrpp_all/"; exit 1
-            fi
-            gh release upload nightly "${files[@]}" -R "$GITHUB_REPOSITORY" --clobber
 
     check_spelling:
         runs-on: ubuntu-latest
