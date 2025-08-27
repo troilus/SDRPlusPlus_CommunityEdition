@@ -859,18 +859,18 @@ update_nightly_release:
     contents: write
   
   steps:
-    - name: Checkout (needed for git tag/push)
-      uses: actions/checkout@v4
+  - name: Checkout (needed for git tag/push)
+    uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Point origin to tokened URL
+  - name: Point origin to tokened URL
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
-    - name: Ensure nightly tag & release
+  - name: Ensure nightly tag & release
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
