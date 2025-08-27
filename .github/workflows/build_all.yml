@@ -866,6 +866,7 @@ update_nightly_release:
 
   - name: Point origin to tokened URL
     env:
+      GH_TOKEN: ${{ github.token }}
       GITHUB_TOKEN: ${{ github.token }}
     run: |
       git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
@@ -876,12 +877,12 @@ update_nightly_release:
       GH_TOKEN: ${{ github.token }}
       GITHUB_TOKEN: ${{ github.token }}
     run: |
-        set -euo pipefail
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git tag -fa nightly "$GITHUB_SHA" -m "nightly $(date -u +%FT%TZ)"
-        git push -f origin refs/tags/nightly
-        gh release view nightly >/dev/null 2>&1 || gh release create nightly -t "SDR++ CE Nightly" -n "Auto-updated nightly build assets" --target "$GITHUB_SHA"
+      set -euo pipefail
+      git config --global user.name "github-actions[bot]"
+      git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      git tag -fa nightly "$GITHUB_SHA" -m "nightly $(date -u +%FT%TZ)"
+      git push -f origin refs/tags/nightly
+      gh release view nightly >/dev/null 2>&1 || gh release create nightly -t "SDR++ CE Nightly" -n "Auto-updated nightly build assets" --target "$GITHUB_SHA"
 
     - name: Download consolidated artifact
       uses: actions/download-artifact@v4
