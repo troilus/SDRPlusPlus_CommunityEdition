@@ -861,21 +861,21 @@ update_nightly_release:
   steps:
   - name: Checkout (needed for git tag/push)
     uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+    with:
+      fetch-depth: 0
 
   - name: Point origin to tokened URL
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: |
-        git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    run: |
+      git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
   - name: Ensure nightly tag & release
-      shell: bash
-      env:
-        GH_TOKEN: ${{ github.token }}
-        GITHUB_TOKEN: ${{ github.token }}
-      run: |
+    shell: bash
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+    run: |
         set -euo pipefail
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
