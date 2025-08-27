@@ -850,10 +850,10 @@ jobs:
         
 update_nightly_release:
   needs: create_full_archive
-  if: github.event_name == 'push' && github.ref == 'refs/heads/master' # or main
+  if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
   runs-on: ubuntu-latest
   permissions:
-    contents: write  # needed to push tags & upload release assets
+    contents: write
   steps:
     - name: Checkout (needed for git tag/push)
       uses: actions/checkout@v4
@@ -867,21 +867,17 @@ update_nightly_release:
         git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
     - name: Ensure nightly tag & release
+      shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
         GITHUB_TOKEN: ${{ github.token }}
-      shell: bash
       run: |
         set -euo pipefail
-        git config --global user.name  "github-actions[bot]"
+        git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
         git tag -fa nightly "$GITHUB_SHA" -m "nightly $(date -u +%FT%TZ)"
         git push -f origin refs/tags/nightly
-
-        # create release if missing (targets current SHA)
-        gh release view nightly >/dev/null 2>&1 || \
-          gh release create nightly -t "SDR++ CE Nightly" -n "Auto-updated nightly build assets" --target "$GITHUB_SHA"
+        gh release view nightly >/dev/null 2>&1 || gh release create nightly -t "SDR++ CE Nightly" -n "Auto-updated nightly build assets" --target "$GITHUB_SHA"
 
     - name: Download consolidated artifact
       uses: actions/download-artifact@v4
@@ -892,8 +888,7 @@ update_nightly_release:
     - name: Upload assets to nightly (clobber to overwrite)
       env:
         GH_TOKEN: ${{ github.token }}
-      run: |
-        gh release upload nightly sdrpp_all/* --clobber
+      run: gh release upload nightly sdrpp_all/* --clobber
 
 
     check_spelling:
