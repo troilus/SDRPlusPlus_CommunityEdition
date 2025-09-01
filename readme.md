@@ -87,7 +87,7 @@ This groundbreaking release delivers the **most advanced frequency scanning expe
 - Linux GCC and Debian compatibility improvements
 - Enhanced macOS support with proper app bundle creation
 
-**📦 Download**: [Release v1.2.3-CE](https://github.com/LunaeMons/SDRPlusPlus_CommunityEdition/releases/tag/v1.2.3-CE)
+**📦 Download**: [Release v1.2.4-CE](https://github.com/LunaeMons/SDRPlusPlus_CommunityEdition/releases/tag/v1.2.4-CE)
 ### 🎯 **Mission: Community-First Development**
 
 This Community Edition exists to address the gap in community contributions and feature development. While the original SDR++ project has established a solid foundation, many valuable user-requested features and improvements have remained unaddressed due to restrictive contribution policies.
