@@ -159,11 +159,7 @@ jobs:
             # Get runs with this status (paginated)
             page=1
             while true; do
-              RUNS_PAGE=$(gh api "repos/${{ github.repository }}/actions/workflows/$workflow_id/runs" \
-                --paginate \
-                -f status="$status" \
-                -f per_page=100 \
-                -f page="$page" \
+              RUNS_PAGE=$(gh api "repos/${{ github.repository }}/actions/workflows/$workflow_id/runs?status=$status&per_page=100&page=$page" \
                 --jq '.workflow_runs[]')
               
               if [ -z "$RUNS_PAGE" ]; then
