@@ -928,8 +928,10 @@ jobs:
     - name: Checkout (needed for creating release)
       uses: actions/checkout@v4
       with:
-        ref: ${{ inputs.commit_sha }}
         fetch-depth: 0
+    
+    - name: Checkout specific commit SHA
+      run: git checkout ${{ inputs.commit_sha }}
 
     - name: Point origin to tokened URL
       env:
