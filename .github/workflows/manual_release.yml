@@ -927,23 +927,27 @@ jobs:
       actions: write
       metadata: read
     steps:
-    - name: Create release tag using GitHub API
+    - name: Checkout for tagging
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Point origin to tokened URL
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+    - name: Create and push release tag
       env:
         GH_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ github.token }}
       run: |
-        # Create the tag using GitHub API (no git push needed)
-        gh api repos/${{ github.repository }}/git/tags \
-          --method POST \
-          --field tag="${{ inputs.release_tag }}" \
-          --field message="Release ${{ inputs.release_tag }}" \
-          --field object="${{ inputs.commit_sha }}" \
-          --field type="commit"
-        
-        # Create the reference
-        gh api repos/${{ github.repository }}/git/refs \
-          --method POST \
-          --field ref="refs/tags/${{ inputs.release_tag }}" \
-          --field sha="${{ inputs.commit_sha }}"
+        set -euo pipefail
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git tag -a "${{ inputs.release_tag }}" "${{ inputs.commit_sha }}" -m "Release ${{ inputs.release_tag }}"
+        git push origin "refs/tags/${{ inputs.release_tag }}"
 
     - name: Download consolidated artifact
       uses: actions/download-artifact@v4
