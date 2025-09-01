@@ -924,8 +924,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      actions: write
-      metadata: read
     steps:
     - name: Checkout for tagging
       uses: actions/checkout@v4
