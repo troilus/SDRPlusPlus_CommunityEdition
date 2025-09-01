@@ -35,14 +35,39 @@ permissions:
   actions: read
 
 jobs:
+  check_permissions:
+    runs-on: ubuntu-latest
+    outputs:
+      can_release: ${{ steps.check.outputs.can_release }}
+    steps:
+    - name: Check if user has admin permissions
+      id: check
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        # Check if the triggering user has admin or maintain permissions
+        USER_PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
+        echo "User ${{ github.actor }} has permission: $USER_PERMISSION"
+        
+        if [[ "$USER_PERMISSION" == "admin" || "$USER_PERMISSION" == "maintain" ]]; then
+          echo "can_release=true" >> $GITHUB_OUTPUT
+          echo "✅ User has sufficient permissions to create releases"
+        else
+          echo "can_release=false" >> $GITHUB_OUTPUT
+          echo "❌ User does not have admin/maintain permissions"
+          exit 1
+        fi
   build_windows:
+    needs: check_permissions
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
-    
+        fetch-depth: 0
+
+   
     - name: Set version variables
       shell: bash
       run: |
@@ -153,6 +178,9 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_windows_x64.zip
 
   build_macos_intel:
+
+    needs: check_permissions
+
     runs-on: macos-13
 
     steps:
@@ -160,6 +188,9 @@ jobs:
       with:
         ref: ${{ inputs.commit_sha }}
         fetch-depth: 0
+
+        fetch-depth: 0
+
         fetch-tags: true
     
     - name: Set version variables
@@ -244,6 +275,8 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_macos_intel.zip
 
   build_macos_arm:
+    needs: check_permissions
+
     runs-on: macos-14
 
     steps:
@@ -251,6 +284,9 @@ jobs:
       with:
         ref: ${{ inputs.commit_sha }}
         fetch-depth: 0
+
+        fetch-depth: 0
+
         fetch-tags: true
     
     - name: Set version variables
@@ -332,12 +368,16 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_macos_arm.zip
 
   build_debian_bullseye_amd64:
+    needs: check_permissions
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/debian_bullseye && docker build . --tag sdrpp_build
@@ -356,12 +396,18 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_debian_bullseye_aarch64:
+
+    needs: check_permissions
+
     runs-on: ubuntu-24.04-arm
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/debian_bullseye && docker build . --tag sdrpp_build
@@ -380,12 +426,18 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_debian_bookworm_amd64:
+
+    needs: check_permissions
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/debian_bookworm && docker build . --tag sdrpp_build
@@ -404,13 +456,18 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_debian_bookworm_aarch64:
+
+    needs: check_permissions
+
     runs-on: ubuntu-24.04-arm
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
-    
+
+        fetch-depth: 0
+
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/debian_bookworm && docker build . --tag sdrpp_build
 
@@ -428,12 +485,17 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_debian_trixie_amd64:
+
+    needs: check_permissions
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/debian_trixie && docker build . --tag sdrpp_build
@@ -452,12 +514,17 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_debian_trixie_aarch64:
+
+    needs: check_permissions
+
     runs-on: ubuntu-24.04-arm
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/debian_trixie && docker build . --tag sdrpp_build
@@ -476,12 +543,17 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_debian_sid_amd64:
+
+    needs: check_permissions
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/debian_sid && docker build . --tag sdrpp_build
@@ -500,12 +572,16 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_debian_sid_aarch64:
+    needs: check_permissions
+
     runs-on: ubuntu-24.04-arm
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/debian_sid && docker build . --tag sdrpp_build
@@ -524,12 +600,15 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_ubuntu_focal_amd64:
+    needs: check_permissions
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/ubuntu_focal && docker build . --tag sdrpp_build
@@ -548,12 +627,14 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_ubuntu_focal_aarch64:
+    needs: check_permissions
     runs-on: ubuntu-24.04-arm
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/ubuntu_focal && docker build . --tag sdrpp_build
@@ -572,12 +653,14 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_ubuntu_jammy_amd64:
+    needs: check_permissions
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/ubuntu_jammy && docker build . --tag sdrpp_build
@@ -596,12 +679,15 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_ubuntu_jammy_aarch64:
+    needs: check_permissions
+
     runs-on: ubuntu-24.04-arm
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/ubuntu_jammy && docker build . --tag sdrpp_build
@@ -620,12 +706,17 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_ubuntu_noble_amd64:
+
+    needs: check_permissions
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/ubuntu_noble && docker build . --tag sdrpp_build
@@ -644,12 +735,15 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_ubuntu_noble_aarch64:
+    needs: check_permissions
     runs-on: ubuntu-24.04-arm
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
+
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/ubuntu_noble && docker build . --tag sdrpp_build
@@ -668,12 +762,15 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_ubuntu_oracular_amd64:
+    needs: check_permissions
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+        fetch-depth: 0
     
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/ubuntu_oracular && docker build . --tag sdrpp_build
@@ -692,13 +789,17 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_ubuntu_oracular_aarch64:
+    needs: check_permissions
+
     runs-on: ubuntu-24.04-arm
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
-    
+
+        fetch-depth: 0
+
     - name: Create Docker Image
       run: cd $GITHUB_WORKSPACE/docker_builds/ubuntu_oracular && docker build . --tag sdrpp_build
 
@@ -716,12 +817,16 @@ jobs:
           path: ${{runner.workspace}}/sdrpp_debian_amd64.deb
 
   build_android:
+    needs: check_permissions
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit_sha }}
+
+        fetch-depth: 0
     
     - name: Update Version Information
       run: |
