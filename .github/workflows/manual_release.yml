@@ -953,6 +953,13 @@ jobs:
         name: sdrpp_all
         path: sdrpp_all
 
+    - name: Get full commit SHA
+      id: get_sha
+      run: |
+        FULL_SHA=$(git rev-parse ${{ inputs.commit_sha }})
+        echo "full_sha=$FULL_SHA" >> $GITHUB_OUTPUT
+        echo "Full SHA: $FULL_SHA"
+
     - name: Create GitHub release
       env:
         GH_TOKEN: ${{ github.token }}
@@ -962,13 +969,13 @@ jobs:
           gh release create "${{ inputs.release_tag }}" \
             --title "${{ inputs.release_title }}" \
             --notes "${{ inputs.release_description }}" \
-            --target "${{ inputs.commit_sha }}" \
+            --target "${{ steps.get_sha.outputs.full_sha }}" \
             --prerelease \
             sdrpp_all/*
         else
           gh release create "${{ inputs.release_tag }}" \
             --title "${{ inputs.release_title }}" \
             --notes "${{ inputs.release_description }}" \
-            --target "${{ inputs.commit_sha }}" \
+            --target "${{ steps.get_sha.outputs.full_sha }}" \
             sdrpp_all/*
         fi
