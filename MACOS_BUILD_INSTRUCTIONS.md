@@ -70,7 +70,6 @@ cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 .. \
 - `USE_BUNDLE_DEFAULTS=ON`: **CRITICAL** - Enables proper macOS bundle behavior
 - `CMAKE_BUILD_TYPE=Release`: Optimized release build
 - `OPT_BUILD_PLUTOSDR_SOURCE=ON`: **NEW** - Enables PlutoSDR source module (requires libiio and libad9361 from MacPorts)
-- `OPT_BUILD_SOAPY_SOURCE=ON`: **NEW** - Enables SoapySDR source module (requires soapysdr from Homebrew)
 
 **⚠️ IMPORTANT: macOS Deployment Target Change**
 - **Previous versions** used `CMAKE_OSX_DEPLOYMENT_TARGET=10.15`
