@@ -23,7 +23,7 @@ bundle_create_icns root/res/icons/sdrpp_ce.macos.png $BUNDLE/Contents/Resources/
 
 # Create the property list
 # Use BUILD_VERSION from environment if available, otherwise use the hardcoded version
-VERSION_STR="${BUILD_VERSION:-1.2.3-CE-nightly}"
+VERSION_STR="${BUILD_VERSION:-1.2.5-CE-nightly}"
 # Remove leading 'v' if present for CFBundleVersion
 CFBundleVersion="${VERSION_STR#v}"
 bundle_create_plist sdrppce "SDR++CE Community Edition" org.sdrppce.sdrppce "$CFBundleVersion" sdrp sdrpp_ce sdrppce $BUNDLE/Contents/Info.plist
