@@ -862,25 +862,6 @@ jobs:
 
   create_full_archive:
     needs: [
-      'build_windows',
-      'build_macos_intel',
-      'build_macos_arm',
-      'build_debian_bullseye_amd64',
-      'build_debian_bullseye_aarch64',
-      'build_debian_bookworm_amd64',
-      'build_debian_bookworm_aarch64',
-      'build_debian_trixie_amd64',
-      'build_debian_trixie_aarch64',
-      'build_debian_sid_amd64',
-      'build_debian_sid_aarch64',
-      'build_ubuntu_focal_amd64',
-      'build_ubuntu_focal_aarch64',
-      'build_ubuntu_jammy_amd64',
-      'build_ubuntu_jammy_aarch64',
-      'build_ubuntu_noble_amd64',
-      'build_ubuntu_noble_aarch64',
-      'build_ubuntu_oracular_amd64',
-      'build_ubuntu_oracular_aarch64',
       'build_android'
     ]
     runs-on: ubuntu-latest
