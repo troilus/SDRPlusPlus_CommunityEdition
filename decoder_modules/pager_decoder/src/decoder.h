@@ -1,5 +1,8 @@
 #pragma once
 #include <signal_path/vfo_manager.h>
+#include <ctime>  
+#include <mutex>  
+#include <vector>
 
 class Decoder {
 public:
