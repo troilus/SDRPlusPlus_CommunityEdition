@@ -9,7 +9,10 @@
 #include <utils/optionlist.h>
 #include "decoder.h"
 #include "pocsag/decoder.h"
-#include "flex/decoder.h"
+#include <chrono>  // 添加这一行  
+#include <mutex>   // 如果还没有的话  
+#include <vector>  // 如果还没有的话  
+#include <string>  // 如果还没有的话
 
 #define CONCAT(a, b) ((std::string(a) + b).c_str())
 
