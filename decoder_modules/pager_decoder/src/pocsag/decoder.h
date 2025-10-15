@@ -34,6 +34,11 @@ public:
         decoder.onMessage.bind(&POCSAGDecoder::messageHandler, this);
     }
 
+     // 添加公共事件,让外部可以订阅  
+    NewEvent<pocsag::Address, pocsag::MessageType, const std::string&> onMessageReceived;  
+
+
+
     ~POCSAGDecoder() {
         stop();
     }
@@ -85,6 +90,8 @@ private:
 
     void messageHandler(pocsag::Address addr, pocsag::MessageType type, const std::string& msg) {
         flog::debug("[{}]: '{}'", (uint32_t)addr, msg);
+                // 触发外部事件  
+        onMessageReceived(addr, type, msg); 
     }
 
     std::string name;
