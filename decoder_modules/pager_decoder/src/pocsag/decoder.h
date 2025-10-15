@@ -82,23 +82,9 @@ private:
         memcpy(buf, data, count * sizeof(float));
         _this->diag.releaseBuffer();
     }
-    struct POCSAGMessage {  
-        pocsag::Address address;  
-        pocsag::MessageType type;  
-        std::string content;  
-        time_t timestamp;  
-    };  
-      
-    std::vector<POCSAGMessage> messageHistory;  
-    std::mutex historyMutex;
 
     void messageHandler(pocsag::Address addr, pocsag::MessageType type, const std::string& msg) {
         flog::debug("[{}]: '{}'", (uint32_t)addr, msg);
-
-            // 存储到历史记录  
-    std::lock_guard<std::mutex> lock(historyMutex);  
-    messageHistory.push_back({addr, type, msg, time(nullptr)});  
-        
     }
 
     std::string name;
